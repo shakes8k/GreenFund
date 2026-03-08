@@ -1,0 +1,509 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum StartupStage {
+  pre_seed
+  seed
+  series_a
+  series_b
+  growth
+}
+
+enum ClimateCategory {
+  solar
+  wind
+  ocean_tech
+  carbon_capture
+  green_hydrogen
+  sustainable_agriculture
+  ev_mobility
+  energy_storage
+  waste_tech
+  biodiversity
+}
+
+enum VerificationStatus {
+  pending
+  under_review
+  verified
+  disputed
+  rejected
+}
+
+enum MilestoneStatus {
+  pending
+  in_progress
+  oracle_verifying
+  completed
+  failed
+  disputed
+}
+
+enum RiskTier {
+  conservative
+  balanced
+  growth
+  speculative
+}
+
+enum AssessmentVerdict {
+  approved
+  rejected
+  needs_revision
+}
+
+enum ContractStatus {
+  pending_acceptance
+  active
+  completed
+  terminated
+  transferred
+}
+
+enum ExpertDomain {
+  climate_science
+  renewable_energy
+  carbon_markets
+  policy_analysis
+  marine_biology
+  sustainable_finance
+  engineering
+  ecology
+}
+
+enum AdminReviewStatus {
+  pending
+  approved
+  rejected
+}
+
+enum UserRole {
+  investor
+  company
+  analyst
+  admin
+}
+
+// ─── User (persistent auth) ───────────────────────────────────────────────────
+
+model User {
+  id               String   @id @default(cuid())
+  email            String   @unique
+  passwordHash     String
+  name             String
+  role             UserRole
+  // Investor fields
+  investorType     String?
+  riskAppetite     String?
+  investmentRange  String?
+  // Company fields
+  companyName      String?
+  category         String?
+  stage            String?
+  countryCode      String?
+  teamSize         String?
+  fundingGoal      String?
+  companyDescription String? @db.Text
+  // Analyst fields
+  domain           String?
+  experience       String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([email])
+  @@index([role])
+}
+
+// ─── Core Models ──────────────────────────────────────────────────────────────
+
+model Startup {
+  id                    String             @id @default(cuid())
+  name                  String
+  description           String             @db.Text
+  stage                 StartupStage
+  category              ClimateCategory
+  foundedYear           Int
+  teamSize              Int
+  countryCode           String             @db.Char(2)
+  websiteUrl            String?
+  companyEmail          String?
+  totalFundedUSD        Decimal            @default(0) @db.Decimal(18, 2)
+  verificationStatus    VerificationStatus @default(pending)
+  riskPoolId            String?
+
+  // Impact metrics
+  co2ReductionTonnesPerYear  Decimal  @db.Decimal(18, 4)
+  jobsCreated                Int      @default(0)
+  sdgGoals                   Int[]
+  waterSavedLitresPerYear    Decimal? @db.Decimal(18, 4)
+  biodiversityScore          Int?
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  riskPool       RiskPool?           @relation(fields: [riskPoolId], references: [id])
+  milestones     Milestone[]
+  assessments    DVNAssessment[]
+  investments    Investment[]
+  impactLedger   ImpactLedgerEntry[]
+  scenarioRuns   ScenarioRun[]
+  contracts      InvestmentContract[]
+  adminReview    AdminReview?
+  aiScore        AICompanyScore?
+  analystReports AnalystReport[]
+  news           CompanyNews[]
+  metricUpdates  CompanyMetricUpdate[]
+  chatRooms      ChatRoom[]
+
+  @@index([category, verificationStatus])
+  @@index([riskPoolId])
+  @@index([companyEmail])
+}
+
+model RiskPool {
+  id               String   @id @default(cuid())
+  name             String
+  description      String   @db.Text
+  tier             RiskTier
+  categories       String[]
+  totalValueLocked Decimal  @default(0) @db.Decimal(18, 2)
+  minInvestmentUSD Decimal  @db.Decimal(18, 2)
+  expectedReturnLow  Decimal @db.Decimal(5, 2)
+  expectedReturnHigh Decimal @db.Decimal(5, 2)
+  lastRebalancedAt DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  startups    Startup[]
+  investments Investment[]
+
+  @@index([tier])
+}
+
+model Milestone {
+  id               String          @id @default(cuid())
+  startupId        String
+  title            String
+  description      String          @db.Text
+  fundReleaseUSD   Decimal         @db.Decimal(18, 2)
+  targetDate       DateTime
+  status           MilestoneStatus @default(pending)
+  oracleSources    String[]
+  verificationData Json?
+  completedAt      DateTime?
+  txHash           String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@index([startupId, status])
+}
+
+model Investor {
+  id            String   @id @default(cuid())
+  walletAddress String?  @unique
+  email         String?  @unique
+  displayName   String?
+  totalInvested Decimal  @default(0) @db.Decimal(18, 2)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  investments Investment[]
+}
+
+model Investment {
+  id             String   @id @default(cuid())
+  investorId     String
+  riskPoolId     String?
+  startupId      String?
+  amountUSD      Decimal  @db.Decimal(18, 2)
+  sharesIssued   Decimal  @default(0) @db.Decimal(28, 8)
+  txHash         String?  @unique
+  investedAt     DateTime @default(now())
+
+  investor Investor  @relation(fields: [investorId], references: [id])
+  riskPool RiskPool? @relation(fields: [riskPoolId], references: [id])
+  startup  Startup?  @relation(fields: [startupId], references: [id])
+
+  @@index([investorId])
+  @@index([riskPoolId])
+}
+
+// ─── DVN Models ───────────────────────────────────────────────────────────────
+
+model DVNExpert {
+  id               String         @id @default(cuid())
+  walletAddress    String?        @unique
+  email            String?        @unique
+  domains          ExpertDomain[]
+  stakedTokens     Decimal        @default(0) @db.Decimal(28, 8)
+  gftBalance       Decimal        @default(0) @db.Decimal(28, 8)
+  reputationScore  Int            @default(50)
+  totalAssessments Int            @default(0)
+  accuracyRate     Decimal        @default(1) @db.Decimal(5, 4)
+  slashedCount     Int            @default(0)
+  joinedAt         DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  assessments DVNAssessment[]
+  challenges  DVNChallenge[]  @relation("challenger")
+  royalties   RoyaltyPayment[]
+}
+
+model DVNAssessment {
+  id                    String            @id @default(cuid())
+  startupId             String
+  expertId              String
+  verdict               AssessmentVerdict
+  confidenceScore       Int
+  report                String            @db.Text
+  stakedAmount          Decimal           @default(0) @db.Decimal(28, 8)
+  challengePeriodEndsAt DateTime
+  resolvedAt            DateTime?
+  slashed               Boolean           @default(false)
+  createdAt             DateTime          @default(now())
+
+  startup    Startup      @relation(fields: [startupId], references: [id])
+  expert     DVNExpert    @relation(fields: [expertId], references: [id])
+  challenges DVNChallenge[]
+
+  @@index([startupId])
+  @@index([expertId])
+}
+
+model DVNChallenge {
+  id               String             @id @default(cuid())
+  assessmentId     String
+  challengerId     String
+  reason           String             @db.Text
+  evidence         String
+  resolvedVerdict  AssessmentVerdict?
+  resolvedAt       DateTime?
+  txHash           String?            @unique
+  createdAt        DateTime           @default(now())
+
+  assessment  DVNAssessment @relation(fields: [assessmentId], references: [id])
+  challenger  DVNExpert     @relation("challenger", fields: [challengerId], references: [id])
+
+  @@index([assessmentId])
+}
+
+// ─── Impact Ledger ────────────────────────────────────────────────────────────
+
+model ImpactLedgerEntry {
+  id                String   @id @default(cuid())
+  startupId         String
+  co2ReducedTonnes  Decimal  @db.Decimal(18, 4)
+  jobsCreated       Int
+  sdgContributions  Int[]
+  reportingPeriod   String
+  verifiedOnChain   Boolean  @default(false)
+  txHash            String?
+  createdAt         DateTime @default(now())
+
+  startup Startup @relation(fields: [startupId], references: [id])
+
+  @@unique([startupId, reportingPeriod])
+  @@index([reportingPeriod])
+}
+
+// ─── Investment Contracts ─────────────────────────────────────────────────────
+// Platform-managed investment agreements. Milestone-gated capital release.
+// Transferable between investors after lock-in period expires.
+
+model InvestmentContract {
+  id                 String         @id @default(cuid())
+  investorEmail      String
+  investorName       String
+  startupId          String
+  amountUSD          Decimal        @db.Decimal(18, 2)
+  status             ContractStatus @default(pending_acceptance)
+  totalReleasedUSD   Decimal        @default(0) @db.Decimal(18, 2)
+  terms              Json
+  // Tradability
+  lockInPeriodDays   Int            @default(365)
+  isTransferable     Boolean        @default(false)
+  transferredToEmail String?
+  transferredAt      DateTime?
+  lockInExpiresAt    DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  startup   Startup          @relation(fields: [startupId], references: [id])
+  royalties RoyaltyPayment[]
+
+  @@index([investorEmail])
+  @@index([startupId])
+}
+
+model RoyaltyPayment {
+  id         String   @id @default(cuid())
+  expertId   String
+  contractId String
+  startupId  String
+  amountGFT  Decimal  @db.Decimal(28, 8)
+  reason     String
+  paidAt     DateTime @default(now())
+
+  expert   DVNExpert          @relation(fields: [expertId], references: [id])
+  contract InvestmentContract @relation(fields: [contractId], references: [id])
+
+  @@index([expertId])
+  @@index([contractId])
+}
+
+// ─── AI Scenario Runs ─────────────────────────────────────────────────────────
+
+model ScenarioRun {
+  id                        String   @id @default(cuid())
+  startupId                 String
+  carbonPriceUSD            Decimal  @db.Decimal(10, 2)
+  policyStrictness          Int
+  technologyAdoptionRate    Int
+  extremeWeatherFrequency   Int
+  projectedValuationUSD     Decimal  @db.Decimal(18, 2)
+  projectedImpactMultiplier Decimal  @db.Decimal(8, 4)
+  confidenceIntervalLow     Decimal  @db.Decimal(8, 4)
+  confidenceIntervalHigh    Decimal  @db.Decimal(8, 4)
+  riskScore                 Int
+  modelVersion              String
+  createdAt                 DateTime @default(now())
+
+  startup Startup @relation(fields: [startupId], references: [id])
+
+  @@index([startupId])
+}
+
+// ─── Admin Review ─────────────────────────────────────────────────────────────
+
+model AdminReview {
+  id         String            @id @default(cuid())
+  startupId  String            @unique
+  adminEmail String?
+  status     AdminReviewStatus @default(pending)
+  notes      String?           @db.Text
+  reviewedAt DateTime?
+  createdAt  DateTime          @default(now())
+
+  startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}
+
+// ─── AI Company Score ─────────────────────────────────────────────────────────
+
+model AICompanyScore {
+  id           String   @id @default(cuid())
+  startupId    String   @unique
+  overallScore Int
+  growthScore  Int
+  impactScore  Int
+  riskScore    Int
+  narrative    String   @db.Text
+  scoredAt     DateTime @default(now())
+
+  startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+}
+
+// ─── Analyst Reports ──────────────────────────────────────────────────────────
+
+model AnalystReport {
+  id           String   @id @default(cuid())
+  startupId    String
+  analystEmail String
+  analystName  String
+  title        String
+  content      String   @db.Text
+  rating       Int
+  publishedAt  DateTime @default(now())
+
+  startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@index([startupId])
+  @@index([analystEmail])
+}
+
+// ─── Company News ─────────────────────────────────────────────────────────────
+
+model CompanyNews {
+  id          String   @id @default(cuid())
+  startupId   String
+  title       String
+  summary     String   @db.Text
+  sourceUrl   String?
+  publishedAt DateTime @default(now())
+
+  startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@index([startupId])
+}
+
+// ─── Company Metric Updates ───────────────────────────────────────────────────
+
+model CompanyMetricUpdate {
+  id                        String   @id @default(cuid())
+  startupId                 String
+  co2ReductionTonnesPerYear Decimal? @db.Decimal(18, 4)
+  jobsCreated               Int?
+  revenue                   Decimal? @db.Decimal(18, 2)
+  customMetrics             Json?
+  notes                     String?  @db.Text
+  createdAt                 DateTime @default(now())
+
+  startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@index([startupId])
+}
+
+// ─── Investor Preferences ─────────────────────────────────────────────────────
+
+model InvestorPreference {
+  id            String   @id @default(cuid())
+  investorEmail String   @unique
+  categories    String[]
+  stages        String[]
+  minScore      Int?
+  updatedAt     DateTime @updatedAt
+
+  @@index([investorEmail])
+}
+
+// ─── Chat System ──────────────────────────────────────────────────────────────
+
+model ChatRoom {
+  id            String   @id @default(cuid())
+  startupId     String
+  investorEmail String
+  companyEmail  String
+  createdAt     DateTime @default(now())
+
+  startup  Startup   @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@unique([startupId, investorEmail])
+  @@index([investorEmail])
+  @@index([companyEmail])
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  roomId      String
+  senderEmail String
+  senderName  String
+  senderRole  String
+  content     String   @db.Text
+  createdAt   DateTime @default(now())
+
+  room ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+}
