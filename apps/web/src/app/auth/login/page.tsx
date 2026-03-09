@@ -50,6 +50,9 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-[calc(100vh-73px)] items-center justify-center px-4 py-12">
+      {/* Radial background glow */}
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_rgba(34,197,94,0.08)_0%,_transparent_60%)]" />
+
       <div className="w-full max-w-sm">
         <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-8">
           <div className="mb-8 text-center">
@@ -91,9 +94,23 @@ export default function LoginPage() {
           </form>
 
           <p className="mt-6 text-center text-sm font-light text-gray-500">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/auth/register" className="font-medium text-green-400 hover:text-green-300">Register</Link>
           </p>
+        </div>
+
+        {/* Decorative stat pills */}
+        <div className="mt-8 grid grid-cols-3 gap-4 opacity-20">
+          {[
+            { value: "142", label: "Startups" },
+            { value: "2.4M t", label: "CO₂ tracked" },
+            { value: "1,200", label: "Validators" },
+          ].map(({ value, label }) => (
+            <div key={label} className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-center">
+              <p className="text-sm font-bold text-white">{value}</p>
+              <p className="text-[10px] text-gray-500">{label}</p>
+            </div>
+          ))}
         </div>
       </div>
     </main>

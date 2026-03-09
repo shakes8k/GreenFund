@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FaqSection } from "@/components/FaqSection";
 
 const roles = [
   {
@@ -15,6 +16,7 @@ const roles = [
     glow: "hover:border-blue-500/40",
     bg: "hover:bg-blue-500/[0.03]",
     badge: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    topAccent: "bg-blue-500",
     href: "/auth/register/investor",
     features: [
       "Browse AI-verified climate startups",
@@ -38,6 +40,7 @@ const roles = [
     glow: "hover:border-green-500/40",
     bg: "hover:bg-green-500/[0.03]",
     badge: "bg-green-500/10 text-green-400 border-green-500/20",
+    topAccent: "bg-green-500",
     href: "/auth/register/company",
     features: [
       "List your climate startup in minutes",
@@ -60,6 +63,7 @@ const roles = [
     glow: "hover:border-purple-500/40",
     bg: "hover:bg-purple-500/[0.03]",
     badge: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+    topAccent: "bg-purple-500",
     href: "/auth/register/analyst",
     features: [
       "Stake GFT tokens, assess startups",
@@ -79,10 +83,46 @@ const steps = [
 ];
 
 const stats = [
-  { value: "2.4M", label: "Tonnes CO₂ tracked" },
-  { value: "142", label: "Startups funded" },
-  { value: "₹3,200 Cr", label: "Capital deployed" },
-  { value: "1,200", label: "Expert validators" },
+  {
+    value: "2.4M",
+    label: "Tonnes CO₂ tracked",
+    accent: "border-l-green-500",
+    icon: (
+      <svg className="h-4 w-4 text-green-500/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3C7 3 3 7.5 3 12c0 3.5 2 6.5 5 8l1-3h6l1 3c3-1.5 5-4.5 5-8 0-4.5-4-9-9-9z" />
+      </svg>
+    ),
+  },
+  {
+    value: "142",
+    label: "Startups funded",
+    accent: "border-l-emerald-500",
+    icon: (
+      <svg className="h-4 w-4 text-emerald-500/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+      </svg>
+    ),
+  },
+  {
+    value: "₹3,200 Cr",
+    label: "Capital deployed",
+    accent: "border-l-teal-500",
+    icon: (
+      <svg className="h-4 w-4 text-teal-500/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+  },
+  {
+    value: "1,200",
+    label: "Expert validators",
+    accent: "border-l-sky-500",
+    icon: (
+      <svg className="h-4 w-4 text-sky-500/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    ),
+  },
 ];
 
 const faqs = [
@@ -181,8 +221,11 @@ export default function LandingPage() {
 
           {/* Stats */}
           <div className="relative mt-20 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-white/5 md:grid-cols-4">
-            {stats.map(({ value, label }) => (
-              <div key={label} className="stat-cell-bg px-6 py-8 transition-colors">
+            {stats.map(({ value, label, accent, icon }) => (
+              <div key={label} className={`stat-cell-bg px-6 py-8 border-l-2 ${accent} transition-colors`}>
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  {icon}
+                </div>
                 <p className="text-3xl font-bold gradient-text">{value}</p>
                 <p className="mt-1 text-sm font-light text-gray-500">{label}</p>
               </div>
@@ -199,38 +242,43 @@ export default function LandingPage() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            {roles.map(({ icon, iconBg, title, tagline, border, glow, bg, badge, href, features: featureList }) => (
+            {roles.map(({ icon, iconBg, title, tagline, border, glow, bg, badge, topAccent, href, features: featureList }) => (
               <div
                 key={title}
-                className={`group relative flex flex-col rounded-2xl border ${border} ${glow} ${bg} bg-white/[0.02] p-8 transition-all duration-300`}
+                className={`group relative flex flex-col overflow-hidden rounded-2xl border ${border} ${glow} ${bg} bg-white/[0.02] transition-all duration-300`}
               >
-                <div className="mb-5">
-                  <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl ring-1 ${iconBg}`}>
-                    {icon}
+                {/* Animated top accent strip */}
+                <div className={`h-[3px] w-full ${topAccent} opacity-60 group-hover:opacity-100 transition-opacity`} />
+
+                <div className="flex flex-col flex-1 p-8">
+                  <div className="mb-5">
+                    <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl ring-1 ${iconBg}`}>
+                      {icon}
+                    </div>
+                    <span className={`block rounded-full border px-2.5 py-0.5 text-xs font-medium w-fit ${badge}`}>
+                      {title}
+                    </span>
+                    <h3 className="mt-3 text-xl font-semibold text-white">{tagline}</h3>
                   </div>
-                  <span className={`block rounded-full border px-2.5 py-0.5 text-xs font-medium w-fit ${badge}`}>
-                    {title}
-                  </span>
-                  <h3 className="mt-3 text-xl font-semibold text-white">{tagline}</h3>
+
+                  <ul className="mb-8 flex-1 space-y-2.5">
+                    {featureList.map((f) => (
+                      <li key={f} className="flex items-start gap-2.5 text-sm font-light text-gray-400">
+                        <svg className="mt-0.5 h-4 w-4 shrink-0 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Link
+                    href={href}
+                    className="block w-full rounded-xl bg-white/5 py-3 text-center text-sm font-semibold text-white transition group-hover:bg-green-500 group-hover:text-black group-hover:shadow-lg group-hover:shadow-green-500/20"
+                  >
+                    Register as {title.slice(0, -1)} →
+                  </Link>
                 </div>
-
-                <ul className="mb-8 flex-1 space-y-2.5">
-                  {featureList.map((f) => (
-                    <li key={f} className="flex items-start gap-2.5 text-sm font-light text-gray-400">
-                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  href={href}
-                  className="block w-full rounded-xl bg-white/5 py-3 text-center text-sm font-semibold text-white transition group-hover:bg-green-500 group-hover:text-black group-hover:shadow-lg group-hover:shadow-green-500/20"
-                >
-                  Register as {title.slice(0, -1)} →
-                </Link>
               </div>
             ))}
           </div>
@@ -249,8 +297,9 @@ export default function LandingPage() {
                 {i < steps.length - 1 && (
                   <div className="absolute left-full top-6 hidden h-px w-8 -translate-y-1/2 bg-gradient-to-r from-green-500/30 to-transparent md:block" />
                 )}
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-green-500/20 bg-green-500/5">
-                  <span className="font-mono text-sm font-semibold text-green-400">{n}</span>
+                {/* Gradient step number circle */}
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500/20 to-green-500/5 border border-green-500/20 shadow-sm shadow-green-500/10">
+                  <span className="font-mono text-sm font-bold text-green-400">{n}</span>
                 </div>
                 <h3 className="mb-2 text-base font-semibold text-white">{title}</h3>
                 <p className="text-sm font-light leading-relaxed text-gray-500">{desc}</p>
@@ -284,20 +333,15 @@ export default function LandingPage() {
           <div className="mb-10 text-center">
             <h2 className="text-3xl font-bold text-white">Common Questions</h2>
           </div>
-          <div className="space-y-3">
-            {faqs.map(({ q, a }) => (
-              <div key={q} className="rounded-2xl border border-white/5 bg-white/[0.02] p-6">
-                <p className="mb-2 font-semibold text-white">{q}</p>
-                <p className="font-light leading-relaxed text-gray-500">{a}</p>
-              </div>
-            ))}
-          </div>
+          <FaqSection faqs={faqs} />
         </section>
 
         {/* ── CTA Banner ────────────────────────────────────────────────────── */}
         <section className="relative mx-auto max-w-7xl px-6 pb-20">
           <div className="relative overflow-hidden rounded-3xl border border-green-500/10 bg-gradient-to-br from-green-950/30 to-[#030712] p-16 text-center">
             <div className="pointer-events-none absolute inset-0 bg-grid opacity-20" />
+            {/* Radial gradient overlay */}
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(34,197,94,0.15)_0%,_transparent_70%)]" />
             <h2 className="relative text-4xl font-bold text-white">Ready to make an impact?</h2>
             <p className="relative mt-3 font-light text-gray-400">
               Join 1,200+ validators, 142 startups, and dozens of institutional investors on GreenFund.

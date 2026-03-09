@@ -162,6 +162,14 @@ html.light {
   background-size: 40px 40px;
 }
 
+@utility pulse-dot {
+  @apply h-2 w-2 rounded-full bg-green-500 animate-pulse;
+}
+
+@utility section-header {
+  @apply text-lg font-semibold text-white flex items-center gap-2 mb-4;
+}
+
 /* ── Light mode overrides ─────────────────────────────────────────────────── */
 /* These sit outside @layer so they win over Tailwind's layered utilities.    */
 

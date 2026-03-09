@@ -9,3 +9,4 @@
 - Update company dashboard: onboarding status card, "Ask Investment" inline form, banner if onboarding incomplete
 - Update /api/admin/pending to include onboarding
 - Update admin page: collapsible "Onboarding Details" in review queue with key people and file download links
+[2026-03-09] Implement Fundraising Rounds + Fractional Investor Offers system: Prisma schema update (InvestorOffer model, amountRaisedINR field), API routes for offers CRUD, FundraisingBanner component, company/investor dashboard updates.

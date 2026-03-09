@@ -559,11 +559,32 @@ model FundraisingRequest {
   startupId        String
   fundingRound     String
   amountRaisingINR Decimal  @db.Decimal(18, 2)
+  amountRaisedINR  Decimal  @default(0) @db.Decimal(18, 2)
   minInvestmentINR Decimal  @db.Decimal(18, 2)
   valuationINR     Decimal  @db.Decimal(18, 2)
   equityPercent    Decimal  @db.Decimal(5, 2)
+  useOfFunds       String?  @db.Text
   status           String   @default("pending")
   createdAt        DateTime @default(now())
 
-  startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  startup Startup        @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  offers  InvestorOffer[]
+}
+
+model InvestorOffer {
+  id                   String   @id @default(cuid())
+  fundraisingRequestId String
+  investorEmail        String
+  investorName         String
+  amountINR            Decimal  @db.Decimal(18, 2)
+  counterEquityPercent Decimal? @db.Decimal(5, 2)
+  status               String   @default("pending")
+  sharesPercent        Decimal? @db.Decimal(8, 4)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  fundraisingRequest FundraisingRequest @relation(fields: [fundraisingRequestId], references: [id], onDelete: Cascade)
+
+  @@index([fundraisingRequestId])
+  @@index([investorEmail])
 }

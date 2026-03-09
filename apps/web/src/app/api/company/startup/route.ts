@@ -60,3 +60,16 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json(startup, { status: 201 });
 }
+
+export async function PATCH(req: NextRequest) {
+  const { startupId, co2ReductionTonnesPerYear, jobsCreated, description } = await req.json();
+  if (!startupId) return NextResponse.json({ error: "startupId required" }, { status: 400 });
+
+  const data: Record<string, unknown> = {};
+  if (co2ReductionTonnesPerYear !== undefined) data.co2ReductionTonnesPerYear = co2ReductionTonnesPerYear;
+  if (jobsCreated !== undefined) data.jobsCreated = Number(jobsCreated);
+  if (description !== undefined) data.description = description;
+
+  const startup = await prisma.startup.update({ where: { id: startupId }, data });
+  return NextResponse.json(startup);
+}

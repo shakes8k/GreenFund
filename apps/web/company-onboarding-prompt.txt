@@ -38,3 +38,39 @@ Company fills in:
 - All uploads stored server-side
 - Admin sees all this data in the review queue
 - Fundraising details shown to investors once approved
+
+---
+
+## Fundraising & Fractional Investment System
+
+### Core Flow
+1. Company fills "Ask Investment" form — equity auto-calculated from valuation + raising amount
+2. Active fundraising round appears on company's public page (visible to all investors)
+3. Investors can submit an offer (standard) or counter-offer (different equity %)
+4. Counter-offers show on company dashboard — company accepts/rejects each
+5. Every accepted investor gets fractional equity: (their_amount / total_raising) * equity_offered
+6. Investor dashboard: remove the contracts section entirely
+
+### Auto-calculated Equity
+equity_percent = (amountRaising / valuation) * 100  — shown as read-only field
+
+### InvestorOffer model (new)
+- fundraisingRequestId, investorEmail, investorName
+- amountINR, counterEquityPercent (null = accepts stated terms)
+- status: pending | accepted | rejected
+- sharesPercent: set on acceptance = (amountINR / totalRaising) * equityOffered
+
+### FundraisingRequest updates
+- Add amountRaisedINR (tracks total collected)
+- offers InvestorOffer[]
+
+### APIs needed
+- GET /api/fundraising?startupId=X
+- POST /api/fundraising/[id]/offer
+- GET /api/fundraising/[id]/offers
+- PATCH /api/fundraising/[id]/offers/[offerId]
+
+### UI changes
+- Company public page: fundraising round card in overview tab with Invest button
+- Company dashboard: incoming offers list with accept/reject
+- Investor dashboard: remove contracts/portfolio section, show their own offers

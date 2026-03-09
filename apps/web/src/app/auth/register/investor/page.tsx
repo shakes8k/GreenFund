@@ -39,6 +39,9 @@ export default function InvestorRegisterPage() {
 
   return (
     <main className="flex min-h-[calc(100vh-73px)] items-center justify-center px-4 py-12">
+      {/* Radial background glow */}
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_rgba(34,197,94,0.08)_0%,_transparent_60%)]" />
+
       <div className="w-full max-w-md">
         {/* Back */}
         <Link href="/auth/register" className="mb-6 flex items-center gap-1 text-sm text-gray-500 hover:text-white transition">
@@ -48,7 +51,10 @@ export default function InvestorRegisterPage() {
 
         {/* Role badge */}
         <div className="mb-6 flex items-center gap-2">
-          <span className="text-2xl">💼</span>
+          <svg className="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
+          </svg>
           <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-0.5 text-xs font-medium text-blue-400">
             Investor Registration
           </span>
@@ -173,6 +179,20 @@ export default function InvestorRegisterPage() {
           Already registered?{" "}
           <Link href="/auth/login" className="font-medium text-blue-400 hover:text-blue-300">Sign in</Link>
         </p>
+
+        {/* Decorative stat pills */}
+        <div className="mt-8 grid grid-cols-3 gap-4 opacity-20">
+          {[
+            { value: "142", label: "Startups" },
+            { value: "2.4M t", label: "CO₂ tracked" },
+            { value: "1,200", label: "Validators" },
+          ].map(({ value, label }) => (
+            <div key={label} className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-center">
+              <p className="text-sm font-bold text-white">{value}</p>
+              <p className="text-[10px] text-gray-500">{label}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </main>
   );

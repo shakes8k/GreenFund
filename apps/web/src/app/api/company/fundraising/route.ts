@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@greenfund/db";
 
 export async function POST(req: NextRequest) {
-  const { startupId, fundingRound, amountRaisingINR, minInvestmentINR, valuationINR, equityPercent } =
+  const { startupId, fundingRound, amountRaisingINR, minInvestmentINR, valuationINR, equityPercent, useOfFunds } =
     await req.json();
   if (!startupId || !fundingRound || !amountRaisingINR) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
   const request = await prisma.fundraisingRequest.create({
-    data: { startupId, fundingRound, amountRaisingINR, minInvestmentINR, valuationINR, equityPercent },
+    data: { startupId, fundingRound, amountRaisingINR, minInvestmentINR, valuationINR, equityPercent, useOfFunds: useOfFunds ?? null, status: "active" },
   });
   return NextResponse.json(request, { status: 201 });
 }

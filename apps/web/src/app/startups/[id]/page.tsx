@@ -2,10 +2,11 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@greenfund/db";
 import { AISummaryPanel } from "@/components/AISummaryPanel";
+import { FundraisingBanner } from "@/components/FundraisingBanner";
 
 export const revalidate = 60;
 
-const TABS = ["overview", "metrics", "news", "reports", "contract"] as const;
+const TABS = ["overview", "metrics", "news", "reports"] as const;
 type Tab = (typeof TABS)[number];
 
 export default async function StartupDetailPage({
@@ -33,6 +34,11 @@ export default async function StartupDetailPage({
       analystReports: { orderBy: { publishedAt: "desc" } },
       news: { orderBy: { publishedAt: "desc" }, take: 20 },
       metricUpdates: { orderBy: { createdAt: "desc" }, take: 20 },
+      fundraisingRequests: {
+        where: { status: { in: ["active", "pending"] } },
+        take: 1,
+        include: { _count: { select: { offers: true } } },
+      },
     },
   });
 
@@ -40,36 +46,60 @@ export default async function StartupDetailPage({
 
   const tabHref = (t: Tab) => `?tab=${t}`;
 
+  // Derive initials for logo placeholder
+  const initials = startup.name
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
       {/* ── Header ── */}
-      <div className="mb-8">
-        <div className="flex flex-wrap items-center gap-3 mb-2">
-          <h1 className="text-3xl font-bold text-white">{startup.name}</h1>
-          <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-xs text-gray-400">
-            {startup.category.replace(/_/g, " ")}
-          </span>
-          <VerificationBadge status={startup.verificationStatus} />
-        </div>
-        <div className="flex flex-wrap gap-3 text-xs text-gray-500">
-          <span>{startup.stage.replace(/_/g, " ")}</span>
-          <span>·</span>
-          <span>{startup.countryCode}</span>
-          <span>·</span>
-          <span>Founded {startup.foundedYear}</span>
+      <div className="relative overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-br from-green-500/[0.06] via-transparent to-transparent p-8 mb-8">
+        {/* Background glow */}
+        <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-green-500/10 blur-3xl" />
+
+        <div className="relative flex flex-wrap items-start gap-5">
+          {/* Logo / Initials */}
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-green-500/20 to-green-500/5 text-xl font-bold text-green-400">
+            {initials}
+          </div>
+
+          <div className="flex-1 min-w-0">
+            {/* Name */}
+            <div className="flex flex-wrap items-center gap-3 mb-2">
+              <h1 className="text-4xl font-bold text-white">{startup.name}</h1>
+              <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-xs text-gray-400">
+                {startup.category.replace(/_/g, " ")}
+              </span>
+              <VerificationBadge status={startup.verificationStatus} />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+              <span>{startup.stage.replace(/_/g, " ")}</span>
+              <span>·</span>
+              <span>{startup.countryCode}</span>
+              <span>·</span>
+              {/* Founded pill */}
+              <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-gray-400">
+                Founded {startup.foundedYear}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* ── Tab navigation ── */}
-      <nav className="mb-8 flex gap-1 border-b border-white/5">
+      <nav className="mb-8 flex flex-wrap gap-1">
         {TABS.map((t) => (
           <Link
             key={t}
             href={tabHref(t)}
-            className={`px-4 py-2.5 text-sm font-medium capitalize transition-colors ${
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors capitalize ${
               activeTab === t
-                ? "border-b-2 border-green-400 text-white"
-                : "text-gray-500 hover:text-gray-300"
+                ? "bg-green-500/10 text-green-400"
+                : "text-gray-500 hover:text-gray-300 hover:bg-white/5"
             }`}
           >
             {t === "reports" ? "Analyst Reports" : t}
@@ -110,6 +140,25 @@ export default async function StartupDetailPage({
               potentialScore:               startup.aiAnalysis.potentialScore,
               analyzedAt:                   startup.aiAnalysis.analyzedAt.toISOString(),
             } : null}
+          />
+
+          {/* Fundraising Banner */}
+          <FundraisingBanner
+            round={
+              startup.fundraisingRequests[0]
+                ? {
+                    id: startup.fundraisingRequests[0].id,
+                    fundingRound: startup.fundraisingRequests[0].fundingRound,
+                    amountRaisingINR: startup.fundraisingRequests[0].amountRaisingINR.toString(),
+                    amountRaisedINR: startup.fundraisingRequests[0].amountRaisedINR.toString(),
+                    minInvestmentINR: startup.fundraisingRequests[0].minInvestmentINR.toString(),
+                    valuationINR: startup.fundraisingRequests[0].valuationINR.toString(),
+                    equityPercent: startup.fundraisingRequests[0].equityPercent.toString(),
+                    _count: startup.fundraisingRequests[0]._count,
+                  }
+                : null
+            }
+            startupId={startup.id}
           />
 
           {/* Key metrics */}
@@ -295,12 +344,6 @@ export default async function StartupDetailPage({
         </section>
       )}
 
-      {/* ── Contract tab ── */}
-      {activeTab === "contract" && (
-        <div className="space-y-8">
-          <ContractSignForm startupId={startup.id} startupName={startup.name} />
-        </div>
-      )}
     </main>
   );
 }
@@ -372,4 +415,3 @@ function MilestoneStatusBadge({ status }: { status: string }) {
 // ── Contract sign form (client component wrapper rendered server-side) ─────────
 // We keep the form in a separate client component so the server page stays a
 // pure async server component.
-import { ContractSignForm } from "@/components/ContractSignForm";

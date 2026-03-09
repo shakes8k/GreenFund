@@ -1,0 +1,1 @@
+Mon Mar  9 09:56:08 UTC 2026: Make the following specific UI improvements to the GreenFund web app - startups listing page cards, startup detail page header, investor dashboard, company dashboard, homepage, auth pages, and globals.css utility classes.
