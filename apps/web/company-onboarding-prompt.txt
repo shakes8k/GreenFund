@@ -1,0 +1,40 @@
+## Company Onboarding Enhancement (Substantial Feature)
+
+### Identity Section
+- Legal company name
+- Registration number (CIN or equivalent)
+- Date of incorporation
+- Country and jurisdiction
+- Registered address
+- Operating address
+- Website
+- Company logo upload
+
+### People Section
+- Key people with LinkedIn profiles (dynamic, add with + button)
+
+### Documentation Section
+- Legal documents (upload)
+- KYC records of key people (upload)
+
+### Financials Section
+- Audited financial records (upload)
+- Patent documents (upload)
+- Environmental certifications - ESG compliance (upload)
+
+All data goes to admin for verification.
+
+### Post-Onboarding: Ask Investment
+Once onboarding is complete, company dashboard shows "Ask Investment" button.
+Company fills in:
+- Funding round (Seed / Series A / etc.)
+- Amount raising (INR)
+- Minimum investment (INR)
+- Valuation (INR)
+- Equity offered (%)
+
+### Notes
+- Use + button for LinkedIn profiles (as many as needed)
+- All uploads stored server-side
+- Admin sees all this data in the review queue
+- Fundraising details shown to investors once approved

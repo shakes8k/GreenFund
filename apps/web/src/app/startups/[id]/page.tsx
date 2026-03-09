@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@greenfund/db";
-import { ScenarioSimulator } from "@/components/scenario/ScenarioSimulator";
+import { AISummaryPanel } from "@/components/AISummaryPanel";
 
 export const revalidate = 60;
 
@@ -29,6 +29,7 @@ export default async function StartupDetailPage({
         take: 5,
       },
       aiScore: true,
+      aiAnalysis: true,
       analystReports: { orderBy: { publishedAt: "desc" } },
       news: { orderBy: { publishedAt: "desc" }, take: 20 },
       metricUpdates: { orderBy: { createdAt: "desc" }, take: 20 },
@@ -97,11 +98,25 @@ export default async function StartupDetailPage({
             </section>
           )}
 
+          {/* AI Summary (market analysis with web search) */}
+          <AISummaryPanel
+            startupId={startup.id}
+            cached={startup.aiAnalysis ? {
+              webSummary:                   startup.aiAnalysis.webSummary,
+              marketAdoptionScore:          startup.aiAnalysis.marketAdoptionScore,
+              financialSustainabilityScore: startup.aiAnalysis.financialSustainabilityScore,
+              technologyScore:              startup.aiAnalysis.technologyScore,
+              consistencyScore:             startup.aiAnalysis.consistencyScore,
+              potentialScore:               startup.aiAnalysis.potentialScore,
+              analyzedAt:                   startup.aiAnalysis.analyzedAt.toISOString(),
+            } : null}
+          />
+
           {/* Key metrics */}
           <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <Metric label="CO₂ / year" value={`${Number(startup.co2ReductionTonnesPerYear).toLocaleString()}t`} />
             <Metric label="Jobs Created" value={startup.jobsCreated.toString()} />
-            <Metric label="Total Funded" value={`$${Number(startup.totalFundedUSD).toLocaleString()}`} />
+            <Metric label="Total Funded" value={`₹${Number(startup.totalFundedUSD).toLocaleString("en-IN")}`} />
             <Metric label="Team Size" value={startup.teamSize.toString()} />
           </section>
 
@@ -126,7 +141,7 @@ export default async function StartupDetailPage({
                   <div className="flex-1">
                     <p className="font-medium text-white">{m.title}</p>
                     <p className="text-xs text-gray-500">
-                      ${Number(m.fundReleaseUSD).toLocaleString()} · {new Date(m.targetDate).toLocaleDateString()}
+                      ₹{Number(m.fundReleaseUSD).toLocaleString("en-IN")} · {new Date(m.targetDate).toLocaleDateString()}
                     </p>
                   </div>
                   <MilestoneStatusBadge status={m.status} />
@@ -283,10 +298,6 @@ export default async function StartupDetailPage({
       {/* ── Contract tab ── */}
       {activeTab === "contract" && (
         <div className="space-y-8">
-          <ScenarioSimulator
-            startupId={startup.id}
-            baselineValuationUSD={Number(startup.totalFundedUSD) || 5_000_000}
-          />
           <ContractSignForm startupId={startup.id} startupName={startup.name} />
         </div>
       )}

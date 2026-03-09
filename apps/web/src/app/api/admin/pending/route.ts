@@ -6,7 +6,7 @@ export async function GET() {
     where: { status: "pending" },
     include: {
       startup: {
-        include: { aiScore: true },
+        include: { aiScore: true, onboarding: true },
       },
     },
     orderBy: { createdAt: "asc" },

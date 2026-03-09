@@ -12,6 +12,15 @@ interface AIScore {
   riskScore: number;
 }
 
+interface Contract {
+  id: string;
+  startupId: string;
+  amountUSD: string;
+  status: string;
+  createdAt: string;
+  startup: { id: string; name: string; category: string; verificationStatus: string };
+}
+
 interface Startup {
   id: string;
   name: string;
@@ -56,12 +65,13 @@ const tierColor: Record<string, string> = {
 const categoryLabel = (c: string) => c.replace(/_/g, " ").replace(/\b\w/g, (x) => x.toUpperCase());
 
 export default function InvestorDashboard() {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUser]         = useState<AuthUser | null>(null);
   const [startups, setStartups] = useState<Startup[]>([]);
-  const [pools, setPools] = useState<Pool[]>([]);
-  const [impact, setImpact] = useState<ImpactStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [pools, setPools]       = useState<Pool[]>([]);
+  const [impact, setImpact]     = useState<ImpactStats | null>(null);
+  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [search, setSearch]     = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -73,10 +83,12 @@ export default function InvestorDashboard() {
       fetch(`/api/startups/recommended?email=${encodeURIComponent(u.email)}`).then((r) => r.json()),
       fetch("/api/pools").then((r) => r.json()),
       fetch("/api/impact").then((r) => r.json()),
-    ]).then(([s, p, i]) => {
+      fetch(`/api/contracts?investor=${encodeURIComponent(u.email)}`).then((r) => r.json()),
+    ]).then(([s, p, i, c]) => {
       setStartups(s);
       setPools(p);
       setImpact(i);
+      setContracts(Array.isArray(c) ? c : []);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [router]);
@@ -137,25 +149,38 @@ export default function InvestorDashboard() {
             {/* Portfolio */}
             <section>
               <h2 className="mb-3 text-lg font-semibold text-white">My Portfolio</h2>
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-gradient-to-br from-blue-500/[0.03] to-transparent py-16 text-center">
-                <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/10">
-                  <svg className="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                  </svg>
-                </div>
-                <h3 className="text-base font-semibold text-white">No investments yet</h3>
-                <p className="mt-1 text-sm font-light text-gray-500 max-w-xs">
-                  Sign investment contracts with verified startups. Funds release only when DVN-verified milestones are met.
-                </p>
-                <div className="mt-5 flex gap-3">
-                  <Link href="/startups" className="rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 px-5 py-2.5 text-sm font-semibold text-black hover:opacity-90 transition">
+              {loading ? (
+                <div className="space-y-3">{Array.from({ length: 2 }).map((_, i) => <div key={i} className="h-16 animate-pulse rounded-xl border border-white/5 bg-white/[0.02]" />)}</div>
+              ) : contracts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-gradient-to-br from-blue-500/[0.03] to-transparent py-12 text-center">
+                  <h3 className="text-base font-semibold text-white">No investments yet</h3>
+                  <p className="mt-1 text-sm font-light text-gray-500 max-w-xs">Fund verified startups from the Contract tab on any startup page.</p>
+                  <Link href="/startups" className="mt-4 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 px-5 py-2.5 text-sm font-semibold text-black hover:opacity-90 transition">
                     Explore Startups
                   </Link>
-                  <Link href="/pools" className="rounded-lg border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10 transition">
-                    View Risk Pools
-                  </Link>
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-3">
+                  {contracts.map((c) => (
+                    <Link key={c.id} href={`/startups/${c.startup.id}`}
+                      className="flex items-center gap-4 rounded-xl border border-white/5 bg-white/[0.02] px-5 py-4 hover:border-green-500/20 transition">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-white">{c.startup.name}</p>
+                        <p className="text-xs text-gray-500">{c.startup.category.replace(/_/g, " ")} · {new Date(c.createdAt).toLocaleDateString()}</p>
+                      </div>
+                      <span className="font-semibold text-green-400">₹{Number(c.amountUSD).toLocaleString("en-IN")}</span>
+                      <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        c.status === "active"             ? "bg-green-500/10 text-green-400" :
+                        c.status === "pending_acceptance" ? "bg-yellow-500/10 text-yellow-400" :
+                        c.status === "terminated"         ? "bg-red-500/10 text-red-400" :
+                        "bg-white/5 text-gray-400"
+                      }`}>
+                        {c.status.replace(/_/g, " ")}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </section>
 
             {/* Recommended startups */}
@@ -269,7 +294,7 @@ export default function InvestorDashboard() {
                       <div className="mt-2 space-y-1 text-sm">
                         <div className="flex justify-between">
                           <span className="font-light text-gray-500">TVL</span>
-                          <span className="text-white">${Number(p.totalValueLocked).toLocaleString()}</span>
+                          <span className="text-white">₹{Number(p.totalValueLocked).toLocaleString("en-IN")}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="font-light text-gray-500">Expected APY</span>
@@ -277,7 +302,7 @@ export default function InvestorDashboard() {
                         </div>
                         <div className="flex justify-between">
                           <span className="font-light text-gray-500">Min. invest</span>
-                          <span className="text-gray-300">${Number(p.minInvestmentUSD).toLocaleString()}</span>
+                          <span className="text-gray-300">₹{Number(p.minInvestmentUSD).toLocaleString("en-IN")}</span>
                         </div>
                       </div>
                       <Link href="/pools"

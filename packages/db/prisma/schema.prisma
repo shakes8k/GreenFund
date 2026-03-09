@@ -28,6 +28,7 @@ enum ClimateCategory {
   energy_storage
   waste_tech
   biodiversity
+  diverse
 }
 
 enum VerificationStatus {
@@ -149,19 +150,22 @@ model Startup {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
-  riskPool       RiskPool?           @relation(fields: [riskPoolId], references: [id])
-  milestones     Milestone[]
-  assessments    DVNAssessment[]
-  investments    Investment[]
-  impactLedger   ImpactLedgerEntry[]
-  scenarioRuns   ScenarioRun[]
-  contracts      InvestmentContract[]
-  adminReview    AdminReview?
-  aiScore        AICompanyScore?
-  analystReports AnalystReport[]
-  news           CompanyNews[]
-  metricUpdates  CompanyMetricUpdate[]
-  chatRooms      ChatRoom[]
+  riskPool            RiskPool?           @relation(fields: [riskPoolId], references: [id])
+  milestones          Milestone[]
+  assessments         DVNAssessment[]
+  investments         Investment[]
+  impactLedger        ImpactLedgerEntry[]
+  scenarioRuns        ScenarioRun[]
+  contracts           InvestmentContract[]
+  adminReview         AdminReview?
+  aiScore             AICompanyScore?
+  aiAnalysis          AIMarketAnalysis?
+  analystReports      AnalystReport[]
+  news                CompanyNews[]
+  metricUpdates       CompanyMetricUpdate[]
+  chatRooms           ChatRoom[]
+  onboarding          CompanyOnboarding?
+  fundraisingRequests FundraisingRequest[]
 
   @@index([category, verificationStatus])
   @@index([riskPoolId])
@@ -414,6 +418,22 @@ model AICompanyScore {
   startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
 }
 
+// ─── AI Market Analysis (web-search backed investor summary) ──────────────────
+
+model AIMarketAnalysis {
+  id                           String   @id @default(cuid())
+  startupId                    String   @unique
+  webSummary                   String   @db.Text
+  marketAdoptionScore          Int
+  financialSustainabilityScore Int
+  technologyScore              Int
+  consistencyScore             Int
+  potentialScore               Int
+  analyzedAt                   DateTime @default(now())
+
+  startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+}
+
 // ─── Analyst Reports ──────────────────────────────────────────────────────────
 
 model AnalystReport {
@@ -506,4 +526,44 @@ model Message {
   room ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   @@index([roomId])
+}
+
+// ─── Company Onboarding ───────────────────────────────────────────────────────
+
+model CompanyOnboarding {
+  id                 String   @id @default(cuid())
+  startupId          String   @unique
+  legalName          String
+  registrationNumber String
+  incorporationDate  DateTime
+  jurisdiction       String
+  registeredAddress  String   @db.Text
+  operatingAddress   String   @db.Text
+  website            String?
+  logoUrl            String?
+  keyPeople          Json     @default("[]")
+  legalDocUrls       String[]
+  kycDocUrls         String[]
+  financialDocUrls   String[]
+  patentDocUrls      String[]
+  esgCertUrls        String[]
+  submittedAt        DateTime @default(now())
+
+  startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+}
+
+// ─── Fundraising Requests ─────────────────────────────────────────────────────
+
+model FundraisingRequest {
+  id               String   @id @default(cuid())
+  startupId        String
+  fundingRound     String
+  amountRaisingINR Decimal  @db.Decimal(18, 2)
+  minInvestmentINR Decimal  @db.Decimal(18, 2)
+  valuationINR     Decimal  @db.Decimal(18, 2)
+  equityPercent    Decimal  @db.Decimal(5, 2)
+  status           String   @default("pending")
+  createdAt        DateTime @default(now())
+
+  startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
 }
