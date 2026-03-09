@@ -62,7 +62,7 @@ export default async function StartupsPage() {
 
   return (
     <main className="relative min-h-screen">
-      <div className="pointer-events-none absolute inset-0 bg-grid opacity-40" />
+      <div className="pointer-events-none absolute inset-0 bg-grid-soft opacity-40" />
 
       <div className="relative mx-auto max-w-7xl px-6 py-12">
         {/* Header */}
@@ -78,7 +78,7 @@ export default async function StartupsPage() {
         {startups.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {startups.map((s) => {
               const accent = categoryAccent[s.category] ?? "bg-green-500";
               const gradient = categoryGradient[s.category] ?? "from-green-500/[0.04]";
@@ -86,7 +86,7 @@ export default async function StartupsPage() {
                 <Link
                   key={s.id}
                   href={`/startups/${s.id}`}
-                  className={`group relative overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-b ${gradient} to-transparent transition hover:border-green-500/30 hover:bg-white/[0.04]`}
+                  className={`gf-card-interactive gf-card-glow group relative overflow-hidden rounded-2xl border bg-gradient-to-b ${gradient} to-transparent`}
                 >
                   {/* Colored top accent strip */}
                   <div className={`h-[3px] w-full ${accent} rounded-t-2xl`} />
@@ -192,7 +192,7 @@ function Metric({
   icon?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg bg-white/[0.03] px-3 py-2">
+    <div className="rounded-lg border border-white/5 bg-white/[0.03] px-3 py-2">
       <div className="flex items-center gap-1">
         {icon}
         <p className="text-[10px] uppercase tracking-wider text-gray-600">{label}</p>
@@ -206,7 +206,7 @@ function Metric({
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 py-32 text-center">
+    <div className="gf-card flex flex-col items-center justify-center rounded-2xl border-dashed py-32 text-center">
       {/* Simple plant/sprout SVG illustration */}
       <svg
         className="h-20 w-20 text-green-500/30"
@@ -235,10 +235,11 @@ function EmptyState() {
       </p>
       <Link
         href="/auth/register/company"
-        className="mt-6 rounded-lg border border-green-500/20 bg-green-500/10 px-5 py-2.5 text-sm font-medium text-green-400 transition hover:bg-green-500/20"
+        className="gf-btn-primary mt-6 px-5 py-2.5 text-sm font-medium"
       >
         List your startup →
       </Link>
     </div>
   );
 }
+

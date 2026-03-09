@@ -65,13 +65,13 @@ export function UserNav() {
       <div className="flex items-center gap-2" suppressHydrationWarning>
         <Link
           href="/auth/login"
-          className="rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-gray-300 transition hover:border-white/40 hover:text-white"
+          className="gf-btn-secondary px-4 py-2 text-sm font-medium text-gray-300"
         >
           Sign In
         </Link>
         <Link
           href="/auth/register"
-          className="rounded-lg bg-green-500 px-4 py-2 text-sm font-semibold text-black transition hover:bg-green-400"
+          className="gf-btn-primary px-4 py-2 text-sm font-semibold"
         >
           Register
         </Link>
@@ -87,7 +87,7 @@ export function UserNav() {
           <Link
             key={href}
             href={href}
-            className="rounded-lg px-3 py-2 text-sm font-medium text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
           >
             {label}
           </Link>
@@ -98,7 +98,7 @@ export function UserNav() {
       <div className="relative">
         <button
           onClick={() => setOpen(!open)}
-          className="flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-white/30 hover:bg-white/20"
+          className="gf-btn-secondary flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-200"
         >
           <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${roleStyle[user.role]}`}>
             {roleLabel[user.role]}
@@ -112,7 +112,7 @@ export function UserNav() {
         {open && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-            <div className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-xl border border-white/10 bg-[#0a0f1a] shadow-2xl">
+            <div className="gf-card absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl">
               <div className="border-b border-white/5 px-4 py-3">
                 <p className="text-sm font-medium text-white">{user.name}</p>
                 <p className="text-xs text-gray-500">{user.email}</p>
@@ -120,7 +120,7 @@ export function UserNav() {
               <Link
                 href={`/dashboard/${user.role}`}
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-400 transition hover:bg-white/5 hover:text-white"
+                className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-400 transition hover:bg-white/10 hover:text-white"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                   <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" />
@@ -130,7 +130,7 @@ export function UserNav() {
               <Link
                 href="/profile"
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-400 transition hover:bg-white/5 hover:text-white"
+                className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-400 transition hover:bg-white/10 hover:text-white"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -139,7 +139,7 @@ export function UserNav() {
               </Link>
               <button
                 onClick={handleLogout}
-                className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-red-400 transition hover:bg-white/5"
+                className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-red-400 transition hover:bg-white/10"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

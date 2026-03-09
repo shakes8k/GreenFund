@@ -56,7 +56,7 @@ export default async function StartupDetailPage({
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
       {/* ── Header ── */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-br from-green-500/[0.06] via-transparent to-transparent p-8 mb-8">
+      <div className="gf-card relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500/[0.12] via-transparent to-transparent p-8 mb-8">
         {/* Background glow */}
         <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-green-500/10 blur-3xl" />
 
@@ -91,7 +91,7 @@ export default async function StartupDetailPage({
       </div>
 
       {/* ── Tab navigation ── */}
-      <nav className="mb-8 flex flex-wrap gap-1">
+      <nav className="mb-8 flex flex-wrap gap-1.5">
         {TABS.map((t) => (
           <Link
             key={t}
@@ -112,7 +112,7 @@ export default async function StartupDetailPage({
         <div className="space-y-8">
           {/* AI Score */}
           {startup.aiScore && (
-            <section className="rounded-2xl border border-white/5 bg-white/[0.02] p-6">
+            <section className="gf-card rounded-2xl p-6">
               <h2 className="mb-5 text-lg font-semibold text-white">AI Company Score</h2>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-3">
@@ -121,7 +121,7 @@ export default async function StartupDetailPage({
                   <ScoreBar label="Impact" value={startup.aiScore.impactScore} color="bg-emerald-500" />
                   <ScoreBar label="Risk (lower = safer)" value={startup.aiScore.riskScore} color="bg-orange-500" />
                 </div>
-                <p className="rounded-lg border border-white/5 bg-white/[0.02] p-4 text-sm leading-relaxed text-gray-300">
+                <p className="rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm leading-relaxed text-gray-300">
                   {startup.aiScore.narrative}
                 </p>
               </div>
@@ -170,7 +170,7 @@ export default async function StartupDetailPage({
           </section>
 
           {/* Description */}
-          <section className="rounded-2xl border border-white/5 bg-white/[0.02] p-6">
+          <section className="gf-card rounded-2xl p-6">
             <h2 className="mb-3 text-lg font-semibold text-white">About</h2>
             <p className="text-sm leading-relaxed text-gray-400">{startup.description}</p>
           </section>
@@ -182,7 +182,7 @@ export default async function StartupDetailPage({
               {startup.milestones.map((m, i) => (
                 <div
                   key={m.id}
-                  className="flex items-center gap-4 rounded-xl border border-white/5 bg-white/[0.02] px-5 py-4"
+                  className="gf-card-interactive flex items-center gap-4 rounded-xl px-5 py-4"
                 >
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 font-mono text-xs text-gray-500">
                     {i + 1}
@@ -217,7 +217,7 @@ export default async function StartupDetailPage({
                 return (
                   <div key={mu.id} className="relative">
                     <span className="absolute -left-[25px] top-1 h-3 w-3 rounded-full border border-green-500/50 bg-green-500/20" />
-                    <div className="rounded-xl border border-white/5 bg-white/[0.02] p-5">
+                    <div className="gf-card rounded-xl p-5">
                       <p className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-600">
                         {new Date(mu.createdAt).toLocaleDateString(undefined, {
                           year: "numeric",
@@ -277,7 +277,7 @@ export default async function StartupDetailPage({
               {startup.news.map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-xl border border-white/5 bg-white/[0.02] p-5 flex flex-col gap-3"
+                  className="gf-card-interactive rounded-xl p-5 flex flex-col gap-3"
                 >
                   <div>
                     <p className="text-xs text-gray-600">
@@ -318,7 +318,7 @@ export default async function StartupDetailPage({
               {startup.analystReports.map((r) => (
                 <div
                   key={r.id}
-                  className="rounded-xl border border-white/5 bg-white/[0.02] p-6 space-y-3"
+                  className="gf-card rounded-xl p-6 space-y-3"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -374,7 +374,7 @@ function Stars({ rating }: { rating: number }) {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
+    <div className="gf-card rounded-xl p-4">
       <p className="text-xs text-gray-500">{label}</p>
       <p className="mt-1 text-lg font-semibold text-green-400">{value}</p>
     </div>
@@ -415,3 +415,4 @@ function MilestoneStatusBadge({ status }: { status: string }) {
 // ── Contract sign form (client component wrapper rendered server-side) ─────────
 // We keep the form in a separate client component so the server page stays a
 // pure async server component.
+

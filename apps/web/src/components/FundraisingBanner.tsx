@@ -80,7 +80,7 @@ export function FundraisingBanner({ round, startupId: _startupId }: Props) {
   const canInvest = user?.role === "investor";
 
   return (
-    <div className="mb-8 rounded-2xl border border-green-500/30 bg-green-500/[0.04] p-6">
+    <div className="gf-card mb-8 rounded-2xl border-indigo-500/25 bg-gradient-to-br from-indigo-500/[0.08] to-cyan-500/[0.04] p-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -142,13 +142,13 @@ export function FundraisingBanner({ round, startupId: _startupId }: Props) {
         <div className="mt-4">
           <button
             onClick={() => setShowForm((p) => !p)}
-            className="rounded-lg bg-green-500 px-5 py-2.5 text-sm font-semibold text-black hover:bg-green-400 transition"
+            className="gf-btn-primary px-5 py-2.5 text-sm font-semibold"
           >
             {showForm ? "Cancel" : "Invest / Counter-Offer"}
           </button>
 
           {showForm && (
-            <form onSubmit={handleSubmit} className="mt-4 space-y-4 rounded-xl border border-white/10 bg-white/[0.02] p-5">
+            <form onSubmit={handleSubmit} className="gf-card mt-4 space-y-4 rounded-xl p-5">
               <div>
                 <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-gray-500">
                   Investment Amount (₹)
@@ -160,7 +160,7 @@ export function FundraisingBanner({ round, startupId: _startupId }: Props) {
                   min={minInvest}
                   placeholder={minInvest.toString()}
                   required
-                  className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:border-green-500/40 focus:outline-none"
+                  className="gf-input w-full px-4 py-2.5 text-sm placeholder-gray-600"
                 />
               </div>
               <div>
@@ -175,7 +175,7 @@ export function FundraisingBanner({ round, startupId: _startupId }: Props) {
                   min="0"
                   max="100"
                   placeholder={`${Number(round.equityPercent).toFixed(2)}`}
-                  className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:border-green-500/40 focus:outline-none"
+                  className="gf-input w-full px-4 py-2.5 text-sm placeholder-gray-600"
                 />
               </div>
               {error && (
@@ -184,7 +184,7 @@ export function FundraisingBanner({ round, startupId: _startupId }: Props) {
               <button
                 type="submit"
                 disabled={submitting}
-                className="rounded-lg bg-green-500 px-6 py-2.5 text-sm font-semibold text-black hover:bg-green-400 disabled:opacity-50 transition"
+                className="gf-btn-primary px-6 py-2.5 text-sm font-semibold disabled:opacity-50"
               >
                 {submitting ? "Submitting…" : "Submit Offer"}
               </button>
@@ -199,3 +199,4 @@ export function FundraisingBanner({ round, startupId: _startupId }: Props) {
     </div>
   );
 }
+

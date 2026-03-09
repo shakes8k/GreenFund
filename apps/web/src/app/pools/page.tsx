@@ -53,7 +53,7 @@ export default function PoolsPage() {
 
   return (
     <main className="relative min-h-screen">
-      <div className="pointer-events-none absolute inset-0 bg-grid opacity-40" />
+      <div className="pointer-events-none absolute inset-0 bg-grid-soft opacity-40" />
       <div className="relative mx-auto max-w-7xl px-6 py-12">
         <div className="mb-10">
           <h1 className="text-4xl font-bold text-white">Risk Pools</h1>
@@ -71,11 +71,11 @@ export default function PoolsPage() {
             <p className="mt-1 text-sm text-gray-500">Risk pools will appear here once created.</p>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {pools.map((p) => (
               <div
                 key={p.id}
-                className="group relative overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] p-6 transition hover:border-green-500/20"
+                className="gf-card-interactive gf-card-glow group relative overflow-hidden rounded-2xl p-6"
               >
                 <div className="mb-4 flex items-center justify-between">
                   <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${tierColors[p.tier] ?? tierColors.balanced}`}>
@@ -88,13 +88,13 @@ export default function PoolsPage() {
                 <p className="mt-1.5 line-clamp-2 text-sm text-gray-500">{p.description}</p>
 
                 <div className="mt-5 grid grid-cols-2 gap-3">
-                  <div className="rounded-lg bg-white/[0.03] px-3 py-2">
+                  <div className="rounded-lg border border-white/5 bg-white/[0.03] px-3 py-2">
                     <p className="text-[10px] uppercase tracking-wider text-gray-600">TVL</p>
                     <p className="mt-0.5 text-sm font-semibold text-green-400">
                       ${Number(p.totalValueLocked).toLocaleString()}
                     </p>
                   </div>
-                  <div className="rounded-lg bg-white/[0.03] px-3 py-2">
+                  <div className="rounded-lg border border-white/5 bg-white/[0.03] px-3 py-2">
                     <p className="text-[10px] uppercase tracking-wider text-gray-600">Expected return</p>
                     <p className="mt-0.5 text-sm font-semibold text-gray-300">
                       {Number(p.expectedReturnLow)}–{Number(p.expectedReturnHigh)}%
@@ -104,7 +104,7 @@ export default function PoolsPage() {
 
                 <button
                   onClick={() => openInvest(p)}
-                  className="mt-4 w-full rounded-lg bg-green-500/10 py-2.5 text-sm font-medium text-green-400 transition hover:bg-green-500/20 active:scale-95"
+                  className="gf-btn-primary mt-4 w-full py-2.5 text-sm font-medium active:scale-95"
                 >
                   Invest in Pool
                 </button>
@@ -121,7 +121,7 @@ export default function PoolsPage() {
           onClick={closeModal}
         >
           <div
-            className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0a0f1a] p-6 shadow-2xl"
+            className="gf-card w-full max-w-md rounded-2xl p-6 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-5 flex items-center justify-between">
@@ -170,7 +170,7 @@ export default function PoolsPage() {
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
                       min={minInvest}
-                      className="w-full rounded-lg border border-white/10 bg-white/5 pl-7 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-green-500/50"
+                      className="gf-input w-full pl-7 pr-4 py-2.5 text-sm"
                       placeholder={minInvest.toLocaleString()}
                     />
                   </div>
@@ -192,7 +192,7 @@ export default function PoolsPage() {
                 <button
                   disabled={!valid}
                   onClick={() => setInvestStep(1)}
-                  className="w-full rounded-lg bg-green-500 py-2.5 text-sm font-semibold text-black transition hover:bg-green-400 disabled:opacity-40"
+                  className="gf-btn-primary w-full py-2.5 text-sm font-semibold disabled:opacity-40"
                 >
                   Review Investment
                 </button>
@@ -214,7 +214,7 @@ export default function PoolsPage() {
                 </p>
                 <button
                   onClick={() => setInvestStep(2)}
-                  className="w-full rounded-lg bg-green-500 py-2.5 text-sm font-semibold text-black transition hover:bg-green-400"
+                  className="gf-btn-primary w-full py-2.5 text-sm font-semibold"
                 >
                   Sign & Invest →
                 </button>
@@ -238,7 +238,7 @@ export default function PoolsPage() {
                 </div>
                 <button
                   onClick={closeModal}
-                  className="rounded-lg border border-white/10 px-6 py-2 text-sm text-gray-400 hover:text-white transition"
+                  className="gf-btn-secondary px-6 py-2 text-sm text-gray-300"
                 >
                   Close
                 </button>
@@ -259,3 +259,4 @@ function Row({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+

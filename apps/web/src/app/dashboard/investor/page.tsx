@@ -117,7 +117,7 @@ export default function InvestorDashboard() {
 
   return (
     <main className="relative min-h-screen">
-      <div className="pointer-events-none absolute inset-0 bg-grid opacity-30" />
+      <div className="pointer-events-none absolute inset-0 bg-grid-soft opacity-35" />
       <div className="relative mx-auto max-w-7xl px-6 py-10">
 
         {/* Header */}
@@ -135,7 +135,7 @@ export default function InvestorDashboard() {
             </div>
           </div>
           <Link href="/startups"
-            className="rounded-lg bg-green-500 px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-green-400">
+            className="gf-btn-primary px-5 py-2.5 text-sm font-semibold">
             Browse Startups
           </Link>
         </div>
@@ -144,7 +144,7 @@ export default function InvestorDashboard() {
         <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
           {loading ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-28 animate-pulse rounded-2xl border border-white/5 bg-white/[0.02]" />
+              <div key={i} className="h-28 gf-skeleton" />
             ))
           ) : (
             <>
@@ -197,7 +197,7 @@ export default function InvestorDashboard() {
                 )}
               </div>
               {loading ? (
-                <div className="space-y-3">{Array.from({ length: 2 }).map((_, i) => <div key={i} className="h-16 animate-pulse rounded-xl border border-white/5 bg-white/[0.02]" />)}</div>
+                <div className="space-y-3">{Array.from({ length: 2 }).map((_, i) => <div key={i} className="h-16 gf-skeleton" />)}</div>
               ) : offers.length === 0 ? (
                 <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-gradient-to-br from-green-500/[0.03] to-transparent py-14 text-center">
                   {/* Illustrated empty state */}
@@ -214,7 +214,7 @@ export default function InvestorDashboard() {
                   </svg>
                   <h3 className="text-base font-semibold text-white">No offers yet</h3>
                   <p className="mt-1 text-sm font-light text-gray-500 max-w-xs">Explore startups to invest in active fundraising rounds.</p>
-                  <Link href="/startups" className="mt-4 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 px-5 py-2.5 text-sm font-semibold text-black hover:opacity-90 transition">
+                  <Link href="/startups" className="gf-btn-primary mt-4 px-5 py-2.5 text-sm font-semibold">
                     Explore Startups
                   </Link>
                 </div>
@@ -276,14 +276,14 @@ export default function InvestorDashboard() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search by name or category…"
-                  className="w-full rounded-lg border border-white/10 bg-white/5 py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-600 focus:border-green-500/40 focus:outline-none"
+                  className="gf-input w-full py-2.5 pl-10 pr-4 text-sm placeholder-gray-600"
                 />
               </div>
 
               {loading ? (
                 <div className="space-y-3">
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="h-20 animate-pulse rounded-xl border border-white/5 bg-white/[0.02]" />
+                    <div key={i} className="h-20 gf-skeleton" />
                   ))}
                 </div>
               ) : filtered.length === 0 ? (
@@ -353,7 +353,7 @@ export default function InvestorDashboard() {
               {loading ? (
                 <div className="space-y-3">
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="h-24 animate-pulse rounded-xl border border-white/5 bg-white/[0.02]" />
+                    <div key={i} className="h-24 gf-skeleton" />
                   ))}
                 </div>
               ) : pools.length === 0 ? (
@@ -385,7 +385,7 @@ export default function InvestorDashboard() {
                         </div>
                       </div>
                       <Link href="/pools"
-                        className="mt-3 block w-full rounded-lg bg-green-500/10 py-2 text-center text-xs font-medium text-green-400 hover:bg-green-500/20 transition">
+                        className="gf-btn-secondary mt-3 block w-full py-2 text-center text-xs font-medium text-green-300 transition">
                         Invest in Pool
                       </Link>
                     </div>
@@ -394,7 +394,7 @@ export default function InvestorDashboard() {
               )}
             </section>
 
-            <section className="rounded-2xl border border-white/5 bg-white/[0.02] p-5">
+            <section className="gf-card rounded-2xl p-5">
               <h2 className="mb-3 font-semibold text-white">Quick Links</h2>
               <div className="space-y-2">
                 {/* Preferences link */}
@@ -459,3 +459,4 @@ function StatCard({
     </div>
   );
 }
+

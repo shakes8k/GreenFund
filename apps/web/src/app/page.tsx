@@ -187,11 +187,11 @@ export default function LandingPage() {
   return (
     <>
       <main className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-grid opacity-40" />
+        <div className="pointer-events-none absolute inset-0 bg-grid-soft opacity-45" />
 
         {/* ── Hero ──────────────────────────────────────────────────────────── */}
-        <section className="relative mx-auto max-w-7xl px-6 pb-20 pt-24 text-center">
-          <div className="pointer-events-none absolute left-1/2 top-0 h-[500px] w-[900px] -translate-x-1/2 rounded-full bg-green-500/5 blur-3xl" />
+        <section className="gf-hero relative mx-auto max-w-7xl px-6 pb-20 pt-24 text-center">
+          <div className="pointer-events-none absolute left-1/2 top-0 h-[520px] w-[900px] -translate-x-1/2 rounded-full bg-indigo-500/15 blur-3xl" />
 
           <h1 className="relative text-5xl font-bold tracking-tight md:text-7xl lg:text-[88px]">
             <span className="gradient-text">Where Capital</span>
@@ -207,20 +207,20 @@ export default function LandingPage() {
           <div className="relative mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
               href="/auth/register"
-              className="rounded-xl bg-green-500 px-8 py-3.5 text-sm font-semibold text-black shadow-lg shadow-green-500/25 transition hover:bg-green-400"
+              className="gf-btn-primary px-8 py-3.5 text-sm font-semibold"
             >
               Get Started →
             </Link>
             <Link
               href="/auth/login"
-              className="rounded-xl border border-white/10 bg-white/5 px-8 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
+              className="gf-btn-secondary px-8 py-3.5 text-sm font-semibold"
             >
               Sign In
             </Link>
           </div>
 
           {/* Stats */}
-          <div className="relative mt-20 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-white/5 md:grid-cols-4">
+          <div className="gf-card relative mt-20 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-white/5 md:grid-cols-4">
             {stats.map(({ value, label, accent, icon }) => (
               <div key={label} className={`stat-cell-bg px-6 py-8 border-l-2 ${accent} transition-colors`}>
                 <div className="flex items-center justify-center gap-2 mb-1">
@@ -245,7 +245,7 @@ export default function LandingPage() {
             {roles.map(({ icon, iconBg, title, tagline, border, glow, bg, badge, topAccent, href, features: featureList }) => (
               <div
                 key={title}
-                className={`group relative flex flex-col overflow-hidden rounded-2xl border ${border} ${glow} ${bg} bg-white/[0.02] transition-all duration-300`}
+                className={`gf-card-interactive gf-card-glow group relative flex flex-col overflow-hidden rounded-2xl border ${border} ${glow} ${bg} transition-all duration-300`}
               >
                 {/* Animated top accent strip */}
                 <div className={`h-[3px] w-full ${topAccent} opacity-60 group-hover:opacity-100 transition-opacity`} />
@@ -274,7 +274,7 @@ export default function LandingPage() {
 
                   <Link
                     href={href}
-                    className="block w-full rounded-xl bg-white/5 py-3 text-center text-sm font-semibold text-white transition group-hover:bg-green-500 group-hover:text-black group-hover:shadow-lg group-hover:shadow-green-500/20"
+                    className="gf-btn-secondary block w-full py-3 text-center text-sm font-semibold transition group-hover:bg-gradient-to-r group-hover:from-indigo-500 group-hover:to-cyan-500 group-hover:text-white"
                   >
                     Register as {title.slice(0, -1)} →
                   </Link>
@@ -298,7 +298,7 @@ export default function LandingPage() {
                   <div className="absolute left-full top-6 hidden h-px w-8 -translate-y-1/2 bg-gradient-to-r from-green-500/30 to-transparent md:block" />
                 )}
                 {/* Gradient step number circle */}
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500/20 to-green-500/5 border border-green-500/20 shadow-sm shadow-green-500/10">
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/25 to-cyan-500/10 border border-indigo-400/25 shadow-sm shadow-indigo-500/15">
                   <span className="font-mono text-sm font-bold text-green-400">{n}</span>
                 </div>
                 <h3 className="mb-2 text-base font-semibold text-white">{title}</h3>
@@ -310,7 +310,7 @@ export default function LandingPage() {
 
         {/* ── Platform Features ─────────────────────────────────────────────── */}
         <section className="relative mx-auto max-w-7xl px-6 pb-28">
-          <div className="overflow-hidden rounded-3xl border border-white/5 bg-white/[0.02]">
+          <div className="gf-card overflow-hidden rounded-3xl">
             <div className="grid md:grid-cols-2">
               {features.map(({ icon, title, desc }, i) => (
                 <div
@@ -338,7 +338,7 @@ export default function LandingPage() {
 
         {/* ── CTA Banner ────────────────────────────────────────────────────── */}
         <section className="relative mx-auto max-w-7xl px-6 pb-20">
-          <div className="relative overflow-hidden rounded-3xl border border-green-500/10 bg-gradient-to-br from-green-950/30 to-[#030712] p-16 text-center">
+          <div className="relative overflow-hidden rounded-3xl border border-indigo-500/20 bg-gradient-to-br from-indigo-950/35 via-[#0b1226] to-[#060b17] p-16 text-center">
             <div className="pointer-events-none absolute inset-0 bg-grid opacity-20" />
             {/* Radial gradient overlay */}
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(34,197,94,0.15)_0%,_transparent_70%)]" />
@@ -349,13 +349,13 @@ export default function LandingPage() {
             <div className="relative mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <Link
                 href="/auth/register"
-                className="rounded-xl bg-green-500 px-10 py-4 text-sm font-semibold text-black shadow-2xl shadow-green-500/30 transition hover:bg-green-400"
+                className="gf-btn-primary px-10 py-4 text-sm font-semibold"
               >
                 Create Your Account →
               </Link>
               <Link
                 href="/auth/login"
-                className="rounded-xl border border-white/10 bg-white/5 px-10 py-4 text-sm font-semibold text-white transition hover:bg-white/10"
+                className="gf-btn-secondary px-10 py-4 text-sm font-semibold"
               >
                 Sign In
               </Link>
@@ -440,3 +440,4 @@ export default function LandingPage() {
     </>
   );
 }
+

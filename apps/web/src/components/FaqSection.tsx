@@ -15,11 +15,11 @@ export function FaqSection({ faqs }: { faqs: FaqItem[] }) {
       {faqs.map(({ q, a }, i) => (
         <div
           key={q}
-          className="rounded-2xl border border-white/5 bg-white/[0.02] overflow-hidden transition-all"
+          className="gf-card-interactive rounded-2xl overflow-hidden transition-all"
         >
           <button
             onClick={() => setOpen(open === i ? null : i)}
-            className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left transition hover:bg-white/[0.02]"
+            className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left transition hover:bg-white/[0.04]"
           >
             <span className="font-semibold text-white">{q}</span>
             <span className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full border border-white/10 text-gray-400 text-sm font-bold transition-transform" style={{ transform: open === i ? "rotate(45deg)" : "none" }}>
@@ -38,3 +38,4 @@ export function FaqSection({ faqs }: { faqs: FaqItem[] }) {
     </div>
   );
 }
+
