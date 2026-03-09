@@ -57,7 +57,11 @@ const verificationColors: Record<string, string> = {
 export default async function StartupsPage() {
   const startups = await prisma.startup.findMany({
     orderBy: { createdAt: "desc" },
-    include: { riskPool: { select: { name: true } } },
+    where: { verificationStatus: "verified" },
+    include: {
+      riskPool: { select: { name: true } },
+      onboarding: { select: { logoUrl: true } },
+    },
   });
 
   return (
@@ -70,8 +74,8 @@ export default async function StartupsPage() {
           <h1 className="text-4xl font-bold text-white">Climate Startups</h1>
           <p className="mt-2 text-gray-500">
             {startups.length > 0
-              ? `${startups.length} verified startups seeking investment`
-              : "No startups listed yet — be the first to apply."}
+              ? `${startups.length} verified startup${startups.length !== 1 ? "s" : ""} seeking investment`
+              : "No verified startups yet — be the first to apply."}
           </p>
         </div>
 
@@ -102,11 +106,26 @@ export default async function StartupsPage() {
                       </span>
                     </div>
 
-                    {/* Name + Description */}
+                    {/* Name + Logo + Description */}
                     <div className="flex items-start justify-between gap-2">
-                      <h2 className="text-lg font-bold text-white group-hover:text-green-300 transition-colors">
-                        {s.name}
-                      </h2>
+                      <div className="flex items-center gap-3 min-w-0">
+                        {/* Logo or initials */}
+                        {s.onboarding?.logoUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={s.onboarding.logoUrl}
+                            alt={`${s.name} logo`}
+                            className="h-9 w-9 shrink-0 rounded-lg object-cover border border-white/10"
+                          />
+                        ) : (
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-green-500/20 to-green-500/5 border border-white/10 text-xs font-bold text-green-400">
+                            {s.name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("")}
+                          </div>
+                        )}
+                        <h2 className="text-lg font-bold text-white group-hover:text-green-300 transition-colors truncate">
+                          {s.name}
+                        </h2>
+                      </div>
                       <svg
                         className="mt-0.5 h-4 w-4 shrink-0 text-gray-600 opacity-0 transition-opacity group-hover:opacity-100 group-hover:text-green-400"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}
@@ -114,7 +133,7 @@ export default async function StartupsPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
-                    <p className="mt-1.5 line-clamp-2 text-sm text-gray-500 leading-relaxed">
+                    <p className="mt-2 line-clamp-2 text-sm text-gray-500 leading-relaxed">
                       {s.description}
                     </p>
 

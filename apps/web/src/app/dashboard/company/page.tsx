@@ -11,6 +11,7 @@ interface Milestone {
   fundReleaseUSD: string;
   targetDate: string;
   status: string;
+  completedAt: string | null;
 }
 
 interface Assessment {
@@ -104,6 +105,16 @@ export default function CompanyDashboard() {
   const [submittingAsk, setSubmittingAsk]     = useState(false);
   const [askSuccess, setAskSuccess]           = useState(false);
 
+  // Milestone management
+  const [milestones, setMilestones]           = useState<Milestone[]>([]);
+  const [showMilestoneForm, setShowMilestoneForm] = useState(false);
+  const [mlTitle, setMlTitle]                 = useState("");
+  const [mlFund, setMlFund]                   = useState("");
+  const [mlDate, setMlDate]                   = useState("");
+  const [addingMilestone, setAddingMilestone] = useState(false);
+  const [deletingMilestone, setDeletingMilestone] = useState<string | null>(null);
+  const [togglingMilestone, setTogglingMilestone] = useState<string | null>(null);
+
   // Inline edit state for metrics
   const [editingCO2, setEditingCO2]           = useState(false);
   const [co2Value, setCo2Value]               = useState("");
@@ -140,6 +151,7 @@ export default function CompanyDashboard() {
         .then((r) => r.json())
         .then((data) => {
           setStartup(data ?? null);
+          if (data?.milestones) setMilestones(data.milestones);
           setLoading(false);
           if (data?.id) {
             // Fetch active fundraising round
@@ -235,10 +247,49 @@ export default function CompanyDashboard() {
     setSavingMetrics(false);
   }
 
+  async function addMilestone() {
+    if (!startup || !mlTitle || !mlDate) return;
+    setAddingMilestone(true);
+    const res = await fetch("/api/milestones", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ startupId: startup.id, title: mlTitle, fundReleaseINR: mlFund ? parseFloat(mlFund) : 0, targetDate: mlDate }),
+    });
+    if (res.ok) {
+      const m = await res.json();
+      setMilestones((prev) => [...prev, m]);
+      setMlTitle(""); setMlFund(""); setMlDate("");
+      setShowMilestoneForm(false);
+    }
+    setAddingMilestone(false);
+  }
+
+  async function deleteMilestone(id: string) {
+    setDeletingMilestone(id);
+    await fetch(`/api/milestones/${id}`, { method: "DELETE" });
+    setMilestones((prev) => prev.filter((m) => m.id !== id));
+    setDeletingMilestone(null);
+  }
+
+  async function toggleMilestone(m: Milestone) {
+    setTogglingMilestone(m.id);
+    const newStatus = m.status === "completed" ? "pending" : "completed";
+    const res = await fetch(`/api/milestones/${m.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: newStatus }),
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setMilestones((prev) => prev.map((x) => (x.id === m.id ? updated : x)));
+    }
+    setTogglingMilestone(null);
+  }
+
   if (!user) return null;
 
   const vs = startup?.verificationStatus ?? "pending";
-  const completedMilestones = startup?.milestones.filter((m) => m.status === "completed").length ?? 0;
+  const completedMilestones = milestones.filter((m) => m.status === "completed").length;
   const pendingOffers = offers.filter((o) => o.status === "pending");
 
   return (
@@ -501,7 +552,7 @@ export default function CompanyDashboard() {
               </div>
               <StatCard
                 label="Milestones"
-                value={`${completedMilestones}/${startup.milestones.length}`}
+                value={`${completedMilestones}/${milestones.length}`}
                 sub="completed"
                 green={completedMilestones > 0}
                 iconPath="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
@@ -573,27 +624,134 @@ export default function CompanyDashboard() {
               <div className="lg:col-span-2 space-y-6">
                 {/* Milestones */}
                 <section>
-                  <h2 className="mb-3 text-lg font-semibold text-white">Milestone Roadmap</h2>
-                  {startup.milestones.length === 0 ? (
+                  <div className="mb-3 flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-white">Milestone Roadmap</h2>
+                    <button
+                      onClick={() => setShowMilestoneForm((p) => !p)}
+                      className="flex items-center gap-1.5 rounded-lg border border-green-500/20 bg-green-500/10 px-3 py-1.5 text-xs font-semibold text-green-400 hover:bg-green-500/20 transition"
+                    >
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                      </svg>
+                      {showMilestoneForm ? "Cancel" : "Add Milestone"}
+                    </button>
+                  </div>
+
+                  {/* Add milestone form */}
+                  {showMilestoneForm && (
+                    <div className="mb-4 rounded-xl border border-green-500/20 bg-green-500/[0.03] p-4 space-y-3">
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="sm:col-span-2">
+                          <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-gray-500">Title</label>
+                          <input
+                            type="text" value={mlTitle} onChange={(e) => setMlTitle(e.target.value)}
+                            placeholder="e.g. Pilot installation complete"
+                            className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-green-500/40 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-gray-500">Fund Release (₹)</label>
+                          <input
+                            type="number" value={mlFund} onChange={(e) => setMlFund(e.target.value)}
+                            placeholder="500000"
+                            className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-green-500/40 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-gray-500">Target Date</label>
+                          <input
+                            type="date" value={mlDate} onChange={(e) => setMlDate(e.target.value)}
+                            className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:border-green-500/40 focus:outline-none [color-scheme:dark]"
+                          />
+                        </div>
+                      </div>
+                      <button
+                        onClick={addMilestone}
+                        disabled={addingMilestone || !mlTitle || !mlDate}
+                        className="rounded-lg bg-green-600 px-5 py-2 text-xs font-semibold text-white hover:bg-green-500 disabled:opacity-50 transition"
+                      >
+                        {addingMilestone ? "Adding…" : "Add Milestone"}
+                      </button>
+                    </div>
+                  )}
+
+                  {milestones.length === 0 ? (
                     <div className="rounded-2xl border border-dashed border-white/10 py-12 text-center">
-                      <p className="text-sm font-light text-gray-500">No milestones defined yet.</p>
+                      <p className="text-sm font-light text-gray-500">No milestones yet. Add your first one above.</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {startup.milestones.map((m, i) => {
+                      {milestones.map((m, i) => {
                         const st = milestoneStatus[m.status] ?? milestoneStatus["pending"]!;
+                        const isCurrent = m.status === "in_progress";
+                        const isCompleted = m.status === "completed";
                         return (
-                          <div key={m.id} className={`flex items-center gap-4 rounded-xl border border-white/5 border-l-2 ${st.borderColor} bg-white/[0.02] px-5 py-4`}>
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-xs font-mono text-gray-500 shrink-0">
+                          <div
+                            key={m.id}
+                            className={`group flex items-center gap-4 rounded-xl border border-l-2 px-5 py-4 transition ${st.borderColor} ${
+                              isCurrent ? "border-blue-500/20 bg-blue-500/[0.03]" : "border-white/5 bg-white/[0.02]"
+                            }`}
+                          >
+                            {/* Checkbox */}
+                            <button
+                              onClick={() => toggleMilestone(m)}
+                              disabled={togglingMilestone === m.id}
+                              className={`shrink-0 h-5 w-5 rounded border-2 flex items-center justify-center transition ${
+                                isCompleted
+                                  ? "border-green-500 bg-green-500"
+                                  : "border-white/20 hover:border-green-500/60"
+                              }`}
+                              title={isCompleted ? "Mark as pending" : "Mark as completed"}
+                            >
+                              {isCompleted && (
+                                <svg className="h-3 w-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                            </button>
+
+                            {/* Step number */}
+                            <div className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 text-xs font-mono text-gray-500 shrink-0">
                               {i + 1}
                             </div>
-                            <div className="flex-1">
-                              <p className="font-medium text-white">{m.title}</p>
-                              <p className="text-xs font-light text-gray-500">
-                                ₹{Number(m.fundReleaseUSD).toLocaleString("en-IN")} · {new Date(m.targetDate).toLocaleDateString()}
+
+                            <div className="flex-1 min-w-0">
+                              <p className={`font-medium ${isCompleted ? "line-through text-gray-500" : "text-white"}`}>{m.title}</p>
+                              <p className="text-xs font-light text-gray-500 mt-0.5">
+                                {Number(m.fundReleaseUSD) > 0 && `₹${Number(m.fundReleaseUSD).toLocaleString("en-IN")} · `}
+                                {new Date(m.targetDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                               </p>
                             </div>
-                            <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${st.color}`}>{st.label}</span>
+
+                            {/* Status badge with heartbeat dot for current */}
+                            <div className="flex items-center gap-2 shrink-0">
+                              {isCurrent && (
+                                <span className="relative flex h-2.5 w-2.5">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+                                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500" />
+                                </span>
+                              )}
+                              <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${st.color}`}>{st.label}</span>
+                            </div>
+
+                            {/* Delete */}
+                            <button
+                              onClick={() => deleteMilestone(m.id)}
+                              disabled={deletingMilestone === m.id}
+                              className="shrink-0 opacity-0 group-hover:opacity-100 text-gray-600 hover:text-red-400 transition disabled:opacity-50"
+                              title="Delete milestone"
+                            >
+                              {deletingMilestone === m.id ? (
+                                <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                </svg>
+                              ) : (
+                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              )}
+                            </button>
                           </div>
                         );
                       })}

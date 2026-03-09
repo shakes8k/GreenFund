@@ -62,6 +62,7 @@ interface StartupRecord {
   verificationStatus: string;
   companyEmail: string | null;
   createdAt: string;
+  onboarding: { logoUrl: string | null } | null;
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -190,6 +191,15 @@ export default function AdminPage() {
               {reviews.map((r) => (
                 <div key={r.id} className="rounded-2xl border border-white/5 bg-white/[0.02] p-6">
                   <div className="mb-4 flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      {r.startup.onboarding?.logoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={r.startup.onboarding.logoUrl} alt={r.startup.name} className="h-12 w-12 shrink-0 rounded-xl object-cover border border-white/10 mt-0.5" />
+                      ) : (
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-green-500/10 text-sm font-bold text-green-400 mt-0.5">
+                          {r.startup.name.split(" ").slice(0, 2).map((w: string) => w[0]?.toUpperCase() ?? "").join("")}
+                        </div>
+                      )}
                     <div>
                       <h2 className="text-xl font-semibold text-white">{r.startup.name}</h2>
                       <div className="mt-1 flex flex-wrap gap-2">
@@ -199,7 +209,8 @@ export default function AdminPage() {
                         {r.startup.companyEmail && <span className="text-xs text-gray-500">{r.startup.companyEmail}</span>}
                       </div>
                     </div>
-                    <span className="text-xs text-gray-600">{new Date(r.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <span className="text-xs text-gray-600 shrink-0">{new Date(r.createdAt).toLocaleDateString()}</span>
                   </div>
                   <p className="mb-4 text-sm leading-relaxed text-gray-400">{r.startup.description}</p>
                   <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -346,6 +357,15 @@ export default function AdminPage() {
             <div className="space-y-2">
               {startups.map((s) => (
                 <div key={s.id} className="flex items-center gap-4 rounded-xl border border-white/5 bg-white/[0.02] px-5 py-3">
+                  {/* Logo or initials */}
+                  {s.onboarding?.logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={s.onboarding.logoUrl} alt={s.name} className="h-8 w-8 shrink-0 rounded-lg object-cover border border-white/10" />
+                  ) : (
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-500/10 text-xs font-bold text-green-400">
+                      {s.name.split(" ").slice(0, 2).map((w: string) => w[0]?.toUpperCase() ?? "").join("")}
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-white truncate">{s.name}</p>
                     <p className="text-xs text-gray-500 truncate">

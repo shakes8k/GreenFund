@@ -39,6 +39,7 @@ export default async function StartupDetailPage({
         take: 1,
         include: { _count: { select: { offers: true } } },
       },
+      onboarding: { select: { logoUrl: true } },
     },
   });
 
@@ -62,9 +63,18 @@ export default async function StartupDetailPage({
 
         <div className="relative flex flex-wrap items-start gap-5">
           {/* Logo / Initials */}
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-green-500/20 to-green-500/5 text-xl font-bold text-green-400">
-            {initials}
-          </div>
+          {startup.onboarding?.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={startup.onboarding.logoUrl}
+              alt={`${startup.name} logo`}
+              className="h-16 w-16 shrink-0 rounded-2xl object-cover border border-white/10"
+            />
+          ) : (
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-green-500/20 to-green-500/5 text-xl font-bold text-green-400">
+              {initials}
+            </div>
+          )}
 
           <div className="flex-1 min-w-0">
             {/* Name */}

@@ -12,6 +12,7 @@ export async function GET() {
       verificationStatus: true,
       companyEmail: true,
       createdAt: true,
+      onboarding: { select: { logoUrl: true } },
     },
     orderBy: { createdAt: "desc" },
   });
