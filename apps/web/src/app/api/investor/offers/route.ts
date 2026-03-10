@@ -8,8 +8,14 @@ export async function GET(req: NextRequest) {
   const offers = await prisma.investorOffer.findMany({
     where: { investorEmail: email },
     include: {
+      secondaryListing: { select: { id: true, status: true } },
       fundraisingRequest: {
-        include: { startup: { select: { id: true, name: true, category: true } } },
+        select: {
+          fundingRound: true,
+          equityPercent: true,
+          valuationINR: true,
+          startup: { select: { id: true, name: true, category: true } },
+        },
       },
     },
     orderBy: { createdAt: "desc" },

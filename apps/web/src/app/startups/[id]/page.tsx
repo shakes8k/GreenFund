@@ -3,6 +3,8 @@ import Link from "next/link";
 import { prisma } from "@greenfund/db";
 import { AISummaryPanel } from "@/components/AISummaryPanel";
 import { FundraisingBanner } from "@/components/FundraisingBanner";
+import { NewsPanel } from "@/components/NewsPanel";
+import { MetricsPanel } from "@/components/MetricsPanel";
 
 export const revalidate = 60;
 
@@ -34,6 +36,7 @@ export default async function StartupDetailPage({
       analystReports: { orderBy: { publishedAt: "desc" } },
       news: { orderBy: { publishedAt: "desc" }, take: 20 },
       metricUpdates: { orderBy: { createdAt: "desc" }, take: 20 },
+      financials: { orderBy: { periodEndDate: "desc" }, take: 10 },
       fundraisingRequests: {
         where: { status: { in: ["active", "pending"] } },
         take: 1,
@@ -200,7 +203,7 @@ export default async function StartupDetailPage({
                   <div className="flex-1">
                     <p className="font-medium text-white">{m.title}</p>
                     <p className="text-xs text-gray-500">
-                      ₹{Number(m.fundReleaseUSD).toLocaleString("en-IN")} · {new Date(m.targetDate).toLocaleDateString()}
+                      ₹{Number(m.fundReleaseUSD).toLocaleString("en-IN")} · {new Date(m.targetDate).toLocaleDateString("en-IN")}
                     </p>
                   </div>
                   <MilestoneStatusBadge status={m.status} />
@@ -216,105 +219,89 @@ export default async function StartupDetailPage({
 
       {/* ── Metrics tab ── */}
       {activeTab === "metrics" && (
-        <section className="space-y-4">
-          <h2 className="text-xl font-semibold text-white">Metrics History</h2>
-          {startup.metricUpdates.length === 0 ? (
-            <p className="text-gray-500">No metric updates yet.</p>
-          ) : (
-            <div className="relative border-l border-white/10 pl-6 space-y-6">
-              {startup.metricUpdates.map((mu) => {
-                const custom = mu.customMetrics as Record<string, unknown> | null;
-                return (
-                  <div key={mu.id} className="relative">
-                    <span className="absolute -left-[25px] top-1 h-3 w-3 rounded-full border border-green-500/50 bg-green-500/20" />
-                    <div className="rounded-xl border border-white/5 bg-white/[0.02] p-5">
-                      <p className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-600">
-                        {new Date(mu.createdAt).toLocaleDateString(undefined, {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </p>
-                      <div className="flex flex-wrap gap-4 text-sm">
-                        {mu.co2ReductionTonnesPerYear != null && (
-                          <span className="text-green-400">
-                            CO₂: <strong>{Number(mu.co2ReductionTonnesPerYear).toLocaleString()}t/yr</strong>
-                          </span>
-                        )}
-                        {mu.jobsCreated != null && (
-                          <span className="text-blue-400">
-                            Jobs: <strong>{mu.jobsCreated}</strong>
-                          </span>
-                        )}
-                        {mu.revenue != null && (
-                          <span className="text-yellow-400">
-                            Revenue: <strong>${Number(mu.revenue).toLocaleString()}</strong>
-                          </span>
-                        )}
-                      </div>
-                      {mu.notes && (
-                        <p className="mt-3 text-sm text-gray-400">{mu.notes}</p>
-                      )}
-                      {custom && Object.keys(custom).length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {Object.entries(custom).map(([k, v]) => (
-                            <span
-                              key={k}
-                              className="rounded border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-gray-400"
-                            >
-                              {k}: {String(v)}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
+        <MetricsPanel
+          startup={{
+            co2ReductionTonnesPerYear: Number(startup.co2ReductionTonnesPerYear),
+            jobsCreated: startup.jobsCreated,
+            waterSavedLitresPerYear: startup.waterSavedLitresPerYear ? Number(startup.waterSavedLitresPerYear) : null,
+            biodiversityScore: startup.biodiversityScore ?? null,
+            sdgGoals: startup.sdgGoals,
+            totalFundedUSD: Number(startup.totalFundedUSD),
+            teamSize: startup.teamSize,
+          }}
+          milestones={startup.milestones.map((m) => ({
+            id: m.id,
+            title: m.title,
+            status: m.status,
+            fundReleaseUSD: Number(m.fundReleaseUSD),
+            targetDate: m.targetDate.toISOString(),
+          }))}
+          assessments={startup.assessments.map((a) => ({
+            id: a.id,
+            verdict: a.verdict,
+            confidenceScore: a.confidenceScore,
+            report: a.report,
+            createdAt: a.createdAt.toISOString(),
+          }))}
+          metricUpdates={startup.metricUpdates.map((mu) => ({
+            id: mu.id,
+            createdAt: mu.createdAt.toISOString(),
+            co2ReductionTonnesPerYear: mu.co2ReductionTonnesPerYear ? Number(mu.co2ReductionTonnesPerYear) : null,
+            jobsCreated: mu.jobsCreated ?? null,
+            revenue: mu.revenue ? Number(mu.revenue) : null,
+            notes: mu.notes ?? null,
+          }))}
+          fundraising={
+            startup.fundraisingRequests[0]
+              ? {
+                  amountRaisingINR: Number(startup.fundraisingRequests[0].amountRaisingINR),
+                  amountRaisedINR: Number(startup.fundraisingRequests[0].amountRaisedINR),
+                  fundingRound: startup.fundraisingRequests[0].fundingRound,
+                  equityPercent: Number(startup.fundraisingRequests[0].equityPercent),
+                  valuationINR: Number(startup.fundraisingRequests[0].valuationINR),
+                }
+              : null
+          }
+          aiScore={
+            startup.aiScore
+              ? {
+                  overallScore: startup.aiScore.overallScore,
+                  growthScore: startup.aiScore.growthScore,
+                  impactScore: startup.aiScore.impactScore,
+                  riskScore: startup.aiScore.riskScore,
+                }
+              : null
+          }
+          financials={startup.financials.map((f) => ({
+            id: f.id,
+            fiscalYear: f.fiscalYear,
+            periodEndDate: f.periodEndDate.toISOString(),
+            revenueINR: f.revenueINR ? Number(f.revenueINR) : null,
+            grossProfitINR: f.grossProfitINR ? Number(f.grossProfitINR) : null,
+            ebitdaINR: f.ebitdaINR ? Number(f.ebitdaINR) : null,
+            netProfitINR: f.netProfitINR ? Number(f.netProfitINR) : null,
+            totalAssetsINR: f.totalAssetsINR ? Number(f.totalAssetsINR) : null,
+            totalLiabilitiesINR: f.totalLiabilitiesINR ? Number(f.totalLiabilitiesINR) : null,
+            cashEquivalentsINR: f.cashEquivalentsINR ? Number(f.cashEquivalentsINR) : null,
+            burnRateINR: f.burnRateINR ? Number(f.burnRateINR) : null,
+            runwayMonths: f.runwayMonths ?? null,
+            filingSource: f.filingSource ?? null,
+          }))}
+        />
       )}
 
       {/* ── News tab ── */}
       {activeTab === "news" && (
-        <section className="space-y-4">
-          <h2 className="text-xl font-semibold text-white">Company News</h2>
-          {startup.news.length === 0 ? (
-            <p className="text-gray-500">No news posted yet.</p>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {startup.news.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-xl border border-white/5 bg-white/[0.02] p-5 flex flex-col gap-3"
-                >
-                  <div>
-                    <p className="text-xs text-gray-600">
-                      {new Date(item.publishedAt).toLocaleDateString(undefined, {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </p>
-                    <h3 className="mt-1 font-semibold text-white">{item.title}</h3>
-                  </div>
-                  <p className="text-sm leading-relaxed text-gray-400 flex-1">{item.summary}</p>
-                  {item.sourceUrl && (
-                    <a
-                      href={item.sourceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-green-400 hover:underline"
-                    >
-                      Read source →
-                    </a>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+        <NewsPanel
+          startupId={startup.id}
+          cached={startup.news.map((n) => ({
+            id: n.id,
+            title: n.title,
+            summary: n.summary,
+            sourceUrl: n.sourceUrl ?? null,
+            publishedAt: n.publishedAt.toISOString(),
+          }))}
+        />
       )}
 
       {/* ── Analyst Reports tab ── */}
@@ -335,7 +322,7 @@ export default async function StartupDetailPage({
                       <h3 className="font-semibold text-white">{r.title}</h3>
                       <p className="text-xs text-gray-500 mt-0.5">
                         By {r.analystName} ·{" "}
-                        {new Date(r.publishedAt).toLocaleDateString(undefined, {
+                        {new Date(r.publishedAt).toLocaleDateString("en-IN", {
                           year: "numeric",
                           month: "short",
                           day: "numeric",

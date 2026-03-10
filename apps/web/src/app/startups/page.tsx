@@ -1,7 +1,7 @@
 import { prisma } from "@greenfund/db";
 import Link from "next/link";
 
-export const revalidate = 30;
+export const dynamic = "force-dynamic";
 
 // Top accent strip colors per category
 const categoryAccent: Record<string, string> = {

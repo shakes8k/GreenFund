@@ -9,6 +9,7 @@ const roleNav: Record<UserRole, { href: string; label: string }[]> = {
   investor: [
     { href: "/dashboard/investor", label: "Dashboard" },
     { href: "/startups", label: "Startups" },
+    { href: "/secondary", label: "Secondary Market" },
     { href: "/pools", label: "Risk Pools" },
     { href: "/ledger", label: "Impact Ledger" },
   ],

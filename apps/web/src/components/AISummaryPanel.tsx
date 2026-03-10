@@ -100,7 +100,7 @@ export function AISummaryPanel({ startupId, cached }: { startupId: string; cache
         </div>
         {analysis && (
           <span className="ml-auto text-[10px] text-gray-600">
-            Updated {new Date(analysis.analyzedAt).toLocaleDateString()}
+            Updated {new Date(analysis.analyzedAt).toLocaleDateString("en-IN")}
           </span>
         )}
       </div>

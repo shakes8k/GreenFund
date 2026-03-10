@@ -1,6 +1,6 @@
 import { prisma } from "@greenfund/db";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 async function getAggregates() {
   return prisma.impactLedgerEntry.aggregate({

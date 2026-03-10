@@ -163,6 +163,7 @@ model Startup {
   analystReports      AnalystReport[]
   news                CompanyNews[]
   metricUpdates       CompanyMetricUpdate[]
+  financials          CompanyFinancials[]
   chatRooms           ChatRoom[]
   onboarding          CompanyOnboarding?
   fundraisingRequests FundraisingRequest[]
@@ -584,7 +585,62 @@ model InvestorOffer {
   updatedAt            DateTime @updatedAt
 
   fundraisingRequest FundraisingRequest @relation(fields: [fundraisingRequestId], references: [id], onDelete: Cascade)
+  secondaryListing   SecondaryListing?
 
   @@index([fundraisingRequestId])
   @@index([investorEmail])
+}
+
+// ─── Secondary Market ─────────────────────────────────────────────────────────
+
+model SecondaryListing {
+  id                  String   @id @default(cuid())
+  offerId             String   @unique
+  sellerEmail         String
+  sellerName          String
+  askPriceINR         Decimal  @db.Decimal(18, 2)
+  algorithmicPriceINR Decimal  @db.Decimal(18, 2)
+  status              String   @default("listed")  // listed | sold | cancelled
+  buyerEmail          String?
+  buyerName           String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  offer InvestorOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+}
+
+// ─── Company Financials (admin-entered from filings) ──────────────────────────
+
+model CompanyFinancials {
+  id                  String   @id @default(cuid())
+  startupId           String
+  fiscalYear          String   // e.g. "FY2024-25"
+  periodEndDate       DateTime
+
+  // P&L
+  revenueINR          Decimal? @db.Decimal(18, 2)
+  grossProfitINR      Decimal? @db.Decimal(18, 2)
+  ebitdaINR           Decimal? @db.Decimal(18, 2)
+  netProfitINR        Decimal? @db.Decimal(18, 2)
+
+  // Balance sheet
+  totalAssetsINR      Decimal? @db.Decimal(18, 2)
+  totalLiabilitiesINR Decimal? @db.Decimal(18, 2)
+  cashEquivalentsINR  Decimal? @db.Decimal(18, 2)
+
+  // Runway
+  burnRateINR         Decimal? @db.Decimal(18, 2)  // monthly burn
+  runwayMonths        Int?
+
+  filingSource        String?  // e.g. "MCA Filing", "Audited P&L", "SEBI Disclosure"
+  notes               String?  @db.Text
+  addedByEmail        String
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@index([startupId])
+  @@unique([startupId, fiscalYear])
 }

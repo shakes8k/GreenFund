@@ -792,7 +792,7 @@ export default function CompanyDashboard() {
                         >
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-white">{o.investorName}</p>
-                            <p className="text-xs text-gray-500">{o.investorEmail} · {new Date(o.createdAt).toLocaleDateString()}</p>
+                            <p className="text-xs text-gray-500">{o.investorEmail} · {new Date(o.createdAt).toLocaleDateString("en-IN")}</p>
                             {o.counterEquityPercent && (
                               <p className="text-xs text-yellow-400 mt-0.5">
                                 Counter equity: {Number(o.counterEquityPercent).toFixed(2)}%
@@ -857,7 +857,7 @@ export default function CompanyDashboard() {
                               {a.expert.walletAddress?.slice(0, 6) ?? "N/A"}…{a.expert.walletAddress?.slice(-4) ?? ""}
                             </p>
                             <p className="text-xs font-light text-gray-500">
-                              Reputation {a.expert.reputationScore}/100 · Confidence {a.confidenceScore}% · {new Date(a.createdAt).toLocaleDateString()}
+                              Reputation {a.expert.reputationScore}/100 · Confidence {a.confidenceScore}% · {new Date(a.createdAt).toLocaleDateString("en-IN")}
                             </p>
                           </div>
                           <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${

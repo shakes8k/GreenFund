@@ -23,7 +23,7 @@ async function getVerifiedStartups() {
   try {
     return await prisma.startup.findMany({
       where: { verificationStatus: "verified" },
-      select: { id: true, name: true, category: true, co2ReductionTonnesPerYear: true, totalFundedUSD: true, stage: true },
+      select: { id: true, name: true, category: true, co2ReductionTonnesPerYear: true, totalFundedUSD: true, stage: true, onboarding: { select: { logoUrl: true } } },
       orderBy: { totalFundedUSD: "desc" },
       take: 3,
     });
@@ -224,7 +224,7 @@ export default async function LandingPage() {
             <h1 className="mx-auto max-w-4xl text-5xl font-bold tracking-tight text-white md:text-7xl lg:text-[80px] lg:leading-[1.05]">
               Where Profit{" "}
               <em className="gradient-text not-italic" style={{ fontStyle: "italic", fontFamily: "Georgia, 'Times New Roman', serif" }}>powers</em>{" "}
-              <span className="gradient-text">Planet.</span>
+              <span className="gradient-text">the Planet.</span>
             </h1>
 
             <p className="relative mx-auto mt-6 max-w-2xl text-lg font-light leading-relaxed text-gray-400">
@@ -394,9 +394,14 @@ export default async function LandingPage() {
                     className="group flex flex-col gap-4 rounded-2xl border border-white/5 bg-white/[0.02] p-6 transition hover:border-green-500/20 hover:bg-white/[0.04]">
                     {/* Avatar */}
                     <div className="flex items-center gap-3">
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/10 text-sm font-bold text-green-400">
-                        {s.name.slice(0, 2).toUpperCase()}
-                      </div>
+                      {s.onboarding?.logoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={s.onboarding.logoUrl} alt={s.name} className="h-11 w-11 shrink-0 rounded-xl object-cover border border-white/10" />
+                      ) : (
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/10 text-sm font-bold text-green-400">
+                          {s.name.slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
                       <div>
                         <p className="font-semibold text-white">{s.name}</p>
                         <span className={`text-[11px] rounded-full border px-2 py-0.5 ${catStyle}`}>
@@ -434,11 +439,7 @@ export default async function LandingPage() {
         <section className="relative mx-auto max-w-7xl px-6 pb-28">
           {/* Section headline */}
           <div className="mb-14 text-center">
-            <p className="text-xs font-semibold uppercase tracking-widest text-green-500">Why GreenFund</p>
-            <h2 className="mt-2 text-4xl font-bold text-white">Not greenwashing. Not promises.</h2>
-            <p className="mt-3 font-light text-gray-500 max-w-xl mx-auto">
-              Three things make GreenFund structurally different from every other climate fund out there.
-            </p>
+            <h2 className="text-5xl font-bold text-white md:text-6xl">Why GreenFund</h2>
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">

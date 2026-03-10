@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getUser } from "@/lib/auth";
 
 interface ActiveRound {
@@ -76,8 +76,12 @@ export function FundraisingBanner({ round, startupId: _startupId }: Props) {
     }
   }
 
-  const user = getUser();
-  const canInvest = user?.role === "investor";
+  const [mounted, setMounted] = useState(false);
+  const [canInvest, setCanInvest] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+    setCanInvest(getUser()?.role === "investor");
+  }, []);
 
   return (
     <div className="mb-8 rounded-2xl border border-green-500/30 bg-green-500/[0.04] p-6">
@@ -133,68 +137,73 @@ export function FundraisingBanner({ round, startupId: _startupId }: Props) {
         Min. investment: <span className="text-gray-300">₹{minInvest.toLocaleString("en-IN")}</span>
       </p>
 
-      {success ? (
+      {success && (
         <div className="mt-4 rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3">
           <p className="text-sm font-medium text-green-400">Offer submitted successfully!</p>
           <p className="text-xs text-gray-400 mt-0.5">The company will review your offer and respond.</p>
         </div>
-      ) : canInvest ? (
-        <div className="mt-4">
-          <button
-            onClick={() => setShowForm((p) => !p)}
-            className="rounded-lg bg-green-500 px-5 py-2.5 text-sm font-semibold text-black hover:bg-green-400 transition"
-          >
-            {showForm ? "Cancel" : "Invest / Counter-Offer"}
-          </button>
+      )}
 
-          {showForm && (
-            <form onSubmit={handleSubmit} className="mt-4 space-y-4 rounded-xl border border-white/10 bg-white/[0.02] p-5">
-              <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Investment Amount (₹)
-                </label>
-                <input
-                  type="number"
-                  value={amountINR}
-                  onChange={(e) => setAmountINR(e.target.value)}
-                  min={minInvest}
-                  placeholder={minInvest.toString()}
-                  required
-                  className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:border-green-500/40 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Counter Equity % <span className="normal-case text-gray-600">(optional — leave blank to accept stated terms)</span>
-                </label>
-                <input
-                  type="number"
-                  value={counterEquity}
-                  onChange={(e) => setCounterEquity(e.target.value)}
-                  step="0.01"
-                  min="0"
-                  max="100"
-                  placeholder={`${Number(round.equityPercent).toFixed(2)}`}
-                  className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:border-green-500/40 focus:outline-none"
-                />
-              </div>
-              {error && (
-                <p className="text-xs text-red-400">{error}</p>
-              )}
-              <button
-                type="submit"
-                disabled={submitting}
-                className="rounded-lg bg-green-500 px-6 py-2.5 text-sm font-semibold text-black hover:bg-green-400 disabled:opacity-50 transition"
-              >
-                {submitting ? "Submitting…" : "Submit Offer"}
-              </button>
-            </form>
-          )}
-        </div>
-      ) : (
-        <p className="mt-4 text-sm text-gray-500">
-          <a href="/auth/login" className="text-green-400 hover:underline">Log in as investor</a> to invest in this round.
-        </p>
+      {/* Render nothing until mounted — prevents server/client mismatch on localStorage-dependent UI */}
+      {mounted && !success && (
+        canInvest ? (
+          <div className="mt-4">
+            <button
+              onClick={() => setShowForm((p) => !p)}
+              className="rounded-lg bg-green-500 px-5 py-2.5 text-sm font-semibold text-black hover:bg-green-400 transition"
+            >
+              {showForm ? "Cancel" : "Invest / Counter-Offer"}
+            </button>
+
+            {showForm && (
+              <form onSubmit={handleSubmit} className="mt-4 space-y-4 rounded-xl border border-white/10 bg-white/[0.02] p-5">
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Investment Amount (₹)
+                  </label>
+                  <input
+                    type="number"
+                    value={amountINR}
+                    onChange={(e) => setAmountINR(e.target.value)}
+                    min={minInvest}
+                    placeholder={minInvest.toString()}
+                    required
+                    className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:border-green-500/40 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Counter Equity % <span className="normal-case text-gray-600">(optional — leave blank to accept stated terms)</span>
+                  </label>
+                  <input
+                    type="number"
+                    value={counterEquity}
+                    onChange={(e) => setCounterEquity(e.target.value)}
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    placeholder={`${Number(round.equityPercent).toFixed(2)}`}
+                    className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:border-green-500/40 focus:outline-none"
+                  />
+                </div>
+                {error && (
+                  <p className="text-xs text-red-400">{error}</p>
+                )}
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="rounded-lg bg-green-500 px-6 py-2.5 text-sm font-semibold text-black hover:bg-green-400 disabled:opacity-50 transition"
+                >
+                  {submitting ? "Submitting…" : "Submit Offer"}
+                </button>
+              </form>
+            )}
+          </div>
+        ) : (
+          <p className="mt-4 text-sm text-gray-500">
+            <a href="/auth/login" className="text-green-400 hover:underline">Log in as investor</a> to invest in this round.
+          </p>
+        )
       )}
     </div>
   );

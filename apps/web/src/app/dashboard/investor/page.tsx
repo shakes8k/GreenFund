@@ -53,9 +53,11 @@ interface InvestorOfferItem {
   sharesPercent: string | null;
   status: string;
   createdAt: string;
+  secondaryListing?: { id: string; status: string } | null;
   fundraisingRequest: {
     fundingRound: string;
     equityPercent: string;
+    valuationINR: string;
     startup: { id: string; name: string; category: string };
   };
 }
@@ -202,7 +204,7 @@ export default function InvestorDashboard() {
             scatterData={scatterData}
           />
         ) : (
-          <OffersView offers={allOffers} loading={loading} />
+          <OffersView offers={allOffers} loading={loading} userEmail={user.email} />
         )}
       </div>
     </main>
@@ -560,7 +562,40 @@ function PortfolioView({
 
 /* ─── Offers view ────────────────────────────────────────────────────────── */
 
-function OffersView({ offers, loading }: { offers: InvestorOfferItem[]; loading: boolean }) {
+function OffersView({ offers, loading, userEmail }: { offers: InvestorOfferItem[]; loading: boolean; userEmail: string }) {
+  const [listing, setListing]     = useState<string | null>(null); // offerId being listed
+  const [askInput, setAskInput]   = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [toast, setToast]         = useState<{ msg: string; ok: boolean } | null>(null);
+  const [listedIds, setListedIds] = useState<Set<string>>(
+    new Set(offers.filter((o) => o.secondaryListing?.status === "listed").map((o) => o.id))
+  );
+
+  function showToast(msg: string, ok: boolean) {
+    setToast({ msg, ok });
+    setTimeout(() => setToast(null), 4000);
+  }
+
+  async function submitListing(o: InvestorOfferItem) {
+    const ask = Number(askInput[o.id] ?? 0);
+    if (!ask || ask <= 0) { showToast("Enter a valid ask price.", false); return; }
+    setSubmitting(true);
+    const res = await fetch("/api/secondary", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ offerId: o.id, sellerEmail: userEmail, askPriceINR: ask }),
+    });
+    setSubmitting(false);
+    if (res.ok) {
+      setListedIds((prev) => new Set([...prev, o.id]));
+      setListing(null);
+      showToast("Equity listed on secondary market!", true);
+    } else {
+      const err = await res.json() as { error?: string };
+      showToast(err.error ?? "Listing failed.", false);
+    }
+  }
+
   if (loading) {
     return <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-16 animate-pulse rounded-xl border border-white/5 bg-white/[0.02]" />)}</div>;
   }
@@ -575,33 +610,117 @@ function OffersView({ offers, loading }: { offers: InvestorOfferItem[]; loading:
       </div>
     );
   }
+
   return (
-    <div className="space-y-3">
-      {offers.map((o) => (
-        <Link key={o.id} href={`/startups/${o.fundraisingRequest.startup.id}`}
-          className="flex items-center gap-4 rounded-xl border border-white/5 bg-white/[0.02] px-5 py-4 hover:border-green-500/20 transition">
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-white">{o.fundraisingRequest.startup.name}</p>
-            <p className="text-xs text-gray-500">
-              {categoryLabel(o.fundraisingRequest.startup.category)} · {o.fundraisingRequest.fundingRound} · {new Date(o.createdAt).toLocaleDateString()}
-            </p>
-            {o.sharesPercent && o.status === "accepted" && (
-              <p className="text-xs text-green-400 mt-0.5">Equity: {Number(o.sharesPercent).toFixed(4)}%</p>
-            )}
-          </div>
-          <span className="font-semibold text-green-400 shrink-0">
-            ₹{Number(o.amountINR).toLocaleString("en-IN")}
-          </span>
-          <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
-            o.status === "accepted" ? "bg-green-500/10 text-green-400" :
-            o.status === "pending"  ? "bg-yellow-500/10 text-yellow-400" :
-            "bg-red-500/10 text-red-400"
-          }`}>
-            {o.status}
-          </span>
+    <>
+      <div className="space-y-3">
+        {offers.map((o) => {
+          const isListed    = listedIds.has(o.id);
+          const isExpanding = listing === o.id;
+          const valuation   = Number(o.fundraisingRequest.valuationINR ?? 0);
+          const shares      = Number(o.sharesPercent ?? 0);
+          const algoEst     = shares > 0 && valuation > 0 ? (shares / 100) * valuation : 0;
+
+          return (
+            <div key={o.id} className="rounded-xl border border-white/5 bg-white/[0.02] hover:border-green-500/20 transition overflow-hidden">
+              <div className="flex items-center gap-4 px-5 py-4">
+                <div className="flex-1 min-w-0">
+                  <Link href={`/startups/${o.fundraisingRequest.startup.id}`} className="font-medium text-white hover:text-green-400 transition">
+                    {o.fundraisingRequest.startup.name}
+                  </Link>
+                  <p className="text-xs text-gray-500">
+                    {categoryLabel(o.fundraisingRequest.startup.category)} · {o.fundraisingRequest.fundingRound} · {new Date(o.createdAt).toLocaleDateString("en-IN")}
+                  </p>
+                  {o.sharesPercent && o.status === "accepted" && (
+                    <p className="text-xs text-green-400 mt-0.5">Equity: {Number(o.sharesPercent).toFixed(4)}%</p>
+                  )}
+                </div>
+                <span className="font-semibold text-green-400 shrink-0">
+                  ₹{Number(o.amountINR).toLocaleString("en-IN")}
+                </span>
+                <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                  o.status === "accepted" ? "bg-green-500/10 text-green-400" :
+                  o.status === "pending"  ? "bg-yellow-500/10 text-yellow-400" :
+                  "bg-red-500/10 text-red-400"
+                }`}>
+                  {o.status}
+                </span>
+
+                {/* List for sale button — only accepted, not already listed */}
+                {o.status === "accepted" && !isListed && (
+                  <button
+                    onClick={() => setListing(isExpanding ? null : o.id)}
+                    className="shrink-0 rounded-lg border border-purple-500/30 bg-purple-500/10 px-3 py-1.5 text-xs font-semibold text-purple-400 hover:bg-purple-500/20 transition"
+                  >
+                    {isExpanding ? "Cancel" : "List for Sale"}
+                  </button>
+                )}
+                {isListed && (
+                  <span className="shrink-0 rounded-full border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-xs font-medium text-blue-400">
+                    Listed
+                  </span>
+                )}
+              </div>
+
+              {/* ── Inline list form ── */}
+              {isExpanding && (
+                <div className="border-t border-white/5 bg-purple-500/[0.04] px-5 py-4">
+                  <p className="text-xs text-gray-400 mb-3">
+                    Set your ask price. Our algorithm estimates{" "}
+                    <span className="font-semibold text-white">{algoEst > 0 ? `₹${algoEst.toLocaleString("en-IN", { maximumFractionDigits: 0 })}` : "—"}</span>
+                    {" "}based on valuation × impact multiplier.
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
+                      <input
+                        type="number"
+                        min={1}
+                        placeholder={algoEst > 0 ? Math.round(algoEst).toString() : "Ask price in INR"}
+                        value={askInput[o.id] ?? ""}
+                        onChange={(e) => setAskInput((prev) => ({ ...prev, [o.id]: e.target.value }))}
+                        className="w-full rounded-lg border border-white/10 bg-white/5 pl-7 pr-4 py-2 text-sm text-white placeholder-gray-600 focus:border-purple-500/40 focus:outline-none"
+                      />
+                    </div>
+                    <button
+                      onClick={() => submitListing(o)}
+                      disabled={submitting}
+                      className="rounded-lg bg-purple-500 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-400 transition disabled:opacity-50"
+                    >
+                      {submitting ? "Listing…" : "Confirm Listing"}
+                    </button>
+                  </div>
+                  <p className="mt-2 text-[10px] text-gray-600">
+                    Once listed, buyers can purchase your equity stake on the{" "}
+                    <Link href="/secondary" className="text-purple-400 hover:underline">secondary market</Link>.
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Secondary market CTA ── */}
+      <div className="mt-6 flex items-center justify-between rounded-xl border border-purple-500/10 bg-purple-500/[0.04] px-5 py-4">
+        <div>
+          <p className="text-sm font-medium text-white">Secondary Market</p>
+          <p className="text-xs text-gray-500 mt-0.5">Browse equity listed by other investors</p>
+        </div>
+        <Link href="/secondary" className="rounded-lg border border-purple-500/30 bg-purple-500/10 px-4 py-2 text-sm font-semibold text-purple-400 hover:bg-purple-500/20 transition">
+          View Marketplace →
         </Link>
-      ))}
-    </div>
+      </div>
+
+      {toast && (
+        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-xl border px-5 py-3 text-sm font-medium shadow-2xl ${
+          toast.ok ? "border-green-500/30 bg-green-500/15 text-green-300" : "border-red-500/30 bg-red-500/15 text-red-300"
+        }`}>
+          <span>{toast.ok ? "✓" : "✕"}</span>
+          <span>{toast.msg}</span>
+        </div>
+      )}
+    </>
   );
 }
 
