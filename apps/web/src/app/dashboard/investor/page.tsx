@@ -150,23 +150,52 @@ export default function InvestorDashboard() {
       <div className="relative mx-auto max-w-7xl px-6 py-10">
 
         {/* ── Header ── */}
-        <div className="mb-8 flex items-start justify-between">
+        <div className="mb-8 flex items-start justify-between flex-wrap gap-4">
           <div>
             <p className="text-sm font-light text-gray-500">Investor dashboard</p>
             <h1 className="text-3xl font-bold text-white">{user.name}</h1>
-            <div className="mt-2 flex items-center gap-2">
+            <div className="mt-2 flex items-center gap-2 flex-wrap">
               <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-xs font-medium text-blue-400">
                 {user.investorType?.replace(/_/g, " ") ?? "Investor"}
               </span>
               <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-xs text-gray-500">
                 {user.riskAppetite ?? "balanced"} risk
               </span>
+              {!loading && portfolio && (
+                <>
+                  {paperReturn > 5 && (
+                    <span className="rounded-full border border-green-500/20 bg-green-500/10 px-2.5 py-0.5 text-xs font-semibold text-green-400">
+                      ▲ {paperReturn.toFixed(1)}% return
+                    </span>
+                  )}
+                  {paperReturn < -5 && (
+                    <span className="rounded-full border border-red-500/20 bg-red-500/10 px-2.5 py-0.5 text-xs font-semibold text-red-400">
+                      ▼ {Math.abs(paperReturn).toFixed(1)}% return
+                    </span>
+                  )}
+                  {climateImpact > 0 && (
+                    <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
+                      🌿 {climateImpact.toFixed(1)} t CO₂/yr
+                    </span>
+                  )}
+                </>
+              )}
             </div>
           </div>
-          <Link href="/startups"
-            className="rounded-lg bg-green-500 px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-green-400">
-            Browse Startups
-          </Link>
+          <div className="flex items-center gap-3">
+            {!loading && holdings.length > 0 && (
+              <div className="text-right">
+                <p className="text-[10px] uppercase tracking-wider text-gray-600">Portfolio Health</p>
+                <p className={`text-lg font-bold ${paperReturn >= 0 ? "text-green-400" : "text-red-400"}`}>
+                  {paperReturn >= 10 ? "Strong" : paperReturn >= 0 ? "Healthy" : paperReturn >= -10 ? "Caution" : "At Risk"}
+                </p>
+              </div>
+            )}
+            <Link href="/startups"
+              className="rounded-lg bg-green-500 px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-green-400">
+              Browse Startups
+            </Link>
+          </div>
         </div>
 
         {/* ── Tabs ── */}

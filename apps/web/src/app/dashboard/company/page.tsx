@@ -298,11 +298,11 @@ export default function CompanyDashboard() {
       <div className="relative mx-auto max-w-7xl px-6 py-10">
 
         {/* Header */}
-        <div className="mb-10 flex items-start justify-between">
+        <div className="mb-10 flex items-start justify-between flex-wrap gap-4">
           <div>
             <p className="text-sm font-light text-gray-500">Company dashboard</p>
             <h1 className="text-3xl font-bold text-white">{user.companyName ?? user.name}</h1>
-            <div className="mt-2 flex items-center gap-2">
+            <div className="mt-2 flex items-center gap-2 flex-wrap">
               {startup ? (
                 <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${verificationColor[vs]}`}>
                   {vs.replace(/_/g, " ")}
@@ -320,6 +320,20 @@ export default function CompanyDashboard() {
               {user.stage && (
                 <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-xs text-gray-500">
                   {user.stage.replace(/_/g, " ")}
+                </span>
+              )}
+              {startup && milestones.length > 0 && (
+                <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${
+                  completedMilestones === milestones.length
+                    ? "border-green-500/20 bg-green-500/10 text-green-400"
+                    : "border-white/10 bg-white/5 text-gray-400"
+                }`}>
+                  {completedMilestones}/{milestones.length} milestones
+                </span>
+              )}
+              {pendingOffers.length > 0 && (
+                <span className="rounded-full border border-yellow-500/20 bg-yellow-500/10 px-2.5 py-0.5 text-xs font-semibold text-yellow-400">
+                  {pendingOffers.length} pending offer{pendingOffers.length !== 1 ? "s" : ""}
                 </span>
               )}
             </div>

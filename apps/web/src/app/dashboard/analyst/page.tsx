@@ -110,6 +110,9 @@ export default function AnalystDashboard() {
       ? (myReports.reduce((sum, r) => sum + r.rating, 0) / myReports.length).toFixed(1)
       : "—";
 
+  const uniqueCoverage = new Set(myReports.map((r) => r.startupId)).size;
+  const bestRating     = myReports.length > 0 ? Math.max(...myReports.map((r) => r.rating)) : 0;
+
   const startupName = (id: string) => queue.find((s) => s.id === id)?.name ?? id;
 
   return (
@@ -150,13 +153,13 @@ export default function AnalystDashboard() {
           <StatCard
             label="Avg Rating"
             value={loading ? "…" : avgRating}
-            sub="across all reports"
+            sub={bestRating > 0 ? `best: ${bestRating}★` : "no ratings yet"}
             color="gold"
           />
           <StatCard
-            label="Startups Queued"
-            value={loading ? "…" : queue.length.toString()}
-            sub="verified startups"
+            label="Companies Covered"
+            value={loading ? "…" : uniqueCoverage.toString()}
+            sub={`of ${queue.length} in queue`}
             color="teal"
           />
           <StatCard
@@ -166,6 +169,22 @@ export default function AnalystDashboard() {
             color="green"
           />
         </div>
+
+        {/* Insight bar */}
+        {!loading && myReports.length > 0 && (
+          <div className="mb-8 rounded-xl border border-purple-500/10 bg-purple-500/[0.04] px-5 py-3.5 flex flex-wrap items-center gap-4 text-xs">
+            <span className="text-purple-400 font-semibold">Coverage insight</span>
+            <span className="text-gray-500">
+              You have analysed <span className="text-white font-medium">{uniqueCoverage}</span> unique compan{uniqueCoverage === 1 ? "y" : "ies"} out of{" "}
+              <span className="text-white font-medium">{queue.length}</span> verified startups in queue.
+            </span>
+            {queue.length - uniqueCoverage > 0 && (
+              <span className="rounded-full border border-yellow-500/20 bg-yellow-500/10 px-2.5 py-0.5 text-yellow-400 font-medium">
+                {queue.length - uniqueCoverage} unanalysed
+              </span>
+            )}
+          </div>
+        )}
 
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">

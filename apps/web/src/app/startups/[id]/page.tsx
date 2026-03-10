@@ -5,6 +5,7 @@ import { AISummaryPanel } from "@/components/AISummaryPanel";
 import { FundraisingBanner } from "@/components/FundraisingBanner";
 import { NewsPanel } from "@/components/NewsPanel";
 import { MetricsPanel } from "@/components/MetricsPanel";
+import { RiskSDG3D } from "@/components/RiskSDG3D";
 
 export const revalidate = 60;
 
@@ -181,6 +182,30 @@ export default async function StartupDetailPage({
             <Metric label="Total Funded" value={`₹${Number(startup.totalFundedUSD).toLocaleString("en-IN")}`} />
             <Metric label="Team Size" value={startup.teamSize.toString()} />
           </section>
+
+          {/* Risk + SDG (3D futuristic) */}
+          <RiskSDG3D
+            stage={startup.stage}
+            category={startup.category}
+            aiScore={startup.aiScore
+              ? { riskScore: startup.aiScore.riskScore, impactScore: startup.aiScore.impactScore }
+              : null}
+            aiAnalysis={startup.aiAnalysis
+              ? {
+                  marketAdoptionScore:          startup.aiAnalysis.marketAdoptionScore,
+                  financialSustainabilityScore: startup.aiAnalysis.financialSustainabilityScore,
+                  technologyScore:              startup.aiAnalysis.technologyScore,
+                }
+              : null}
+            assessments={startup.assessments.map((a) => ({ verdict: a.verdict, confidenceScore: a.confidenceScore }))}
+            milestones={startup.milestones.map((m) => ({ status: m.status }))}
+            latestFinancials={startup.financials[0] ? { runwayMonths: startup.financials[0].runwayMonths } : null}
+            sdgGoals={startup.sdgGoals}
+            co2ReductionTonnesPerYear={Number(startup.co2ReductionTonnesPerYear)}
+            jobsCreated={startup.jobsCreated}
+            waterSavedLitresPerYear={startup.waterSavedLitresPerYear ? Number(startup.waterSavedLitresPerYear) : null}
+            biodiversityScore={startup.biodiversityScore ?? null}
+          />
 
           {/* Description */}
           <section className="rounded-2xl border border-white/5 bg-white/[0.02] p-6">
