@@ -445,6 +445,13 @@ model AnalystReport {
   title        String
   content      String   @db.Text
   rating       Int
+  // Analyst scoring (mirrors AI scoring dimensions for consensus comparison)
+  growthScore  Int?
+  impactScore  Int?
+  riskScore    Int?
+  overallScore Int?
+  // PDF report attachment (external URL)
+  pdfUrl       String?
   publishedAt  DateTime @default(now())
 
   startup Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)

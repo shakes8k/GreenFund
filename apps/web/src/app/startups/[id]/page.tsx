@@ -6,10 +6,11 @@ import { FundraisingBanner } from "@/components/FundraisingBanner";
 import { NewsPanel } from "@/components/NewsPanel";
 import { MetricsPanel } from "@/components/MetricsPanel";
 import { RiskSDG3D } from "@/components/RiskSDG3D";
+import { DVNPanel } from "@/components/DVNPanel";
 
 export const revalidate = 60;
 
-const TABS = ["overview", "metrics", "news", "reports"] as const;
+const TABS = ["overview", "metrics", "news", "reports", "dvn"] as const;
 type Tab = (typeof TABS)[number];
 
 export default async function StartupDetailPage({
@@ -116,7 +117,7 @@ export default async function StartupDetailPage({
                 : "text-gray-500 hover:text-gray-300 hover:bg-white/5"
             }`}
           >
-            {t === "reports" ? "Analyst Reports" : t}
+            {t === "reports" ? "Analyst Reports" : t === "dvn" ? "DVN Network" : t}
           </Link>
         ))}
       </nav>
@@ -364,6 +365,47 @@ export default async function StartupDetailPage({
             </div>
           )}
         </section>
+      )}
+
+      {/* ── DVN Network tab ── */}
+      {activeTab === "dvn" && (
+        <DVNPanel
+          startupName={startup.name}
+          aiScore={startup.aiScore
+            ? {
+                overallScore: startup.aiScore.overallScore,
+                growthScore:  startup.aiScore.growthScore,
+                impactScore:  startup.aiScore.impactScore,
+                riskScore:    startup.aiScore.riskScore,
+              }
+            : null}
+          assessments={startup.assessments.map((a) => ({
+            id:              a.id,
+            verdict:         a.verdict,
+            confidenceScore: a.confidenceScore,
+            report:          a.report,
+            createdAt:       a.createdAt.toISOString(),
+            expert: {
+              walletAddress:   a.expert.walletAddress,
+              reputationScore: a.expert.reputationScore,
+              domain:          null,
+            },
+          }))}
+          analystReports={startup.analystReports.map((r) => ({
+            id:           r.id,
+            analystName:  r.analystName,
+            analystEmail: r.analystEmail,
+            title:        r.title,
+            content:      r.content,
+            rating:       r.rating,
+            publishedAt:  r.publishedAt.toISOString(),
+            growthScore:  r.growthScore  ?? null,
+            impactScore:  r.impactScore  ?? null,
+            riskScore:    r.riskScore    ?? null,
+            overallScore: r.overallScore ?? null,
+            pdfUrl:       r.pdfUrl       ?? null,
+          }))}
+        />
       )}
 
     </main>

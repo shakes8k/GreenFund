@@ -36,6 +36,11 @@ export default function AnalystDashboard() {
   const [formTitle, setFormTitle] = useState("");
   const [formContent, setFormContent] = useState("");
   const [formRating, setFormRating] = useState(0);
+  const [formGrowth, setFormGrowth]   = useState<number | "">("");
+  const [formImpact, setFormImpact]   = useState<number | "">("");
+  const [formRiskS, setFormRiskS]     = useState<number | "">("");
+  const [formOverall, setFormOverall] = useState<number | "">("");
+  const [formPdfUrl, setFormPdfUrl]   = useState("");
   const [formError, setFormError] = useState("");
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
@@ -74,12 +79,17 @@ export default function AnalystDashboard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          startupId: formStartupId,
+          startupId:    formStartupId,
           analystEmail: user.email,
-          analystName: user.name,
-          title: formTitle,
-          content: formContent,
-          rating: formRating,
+          analystName:  user.name,
+          title:        formTitle,
+          content:      formContent,
+          rating:       formRating,
+          growthScore:  formGrowth  !== "" ? formGrowth  : undefined,
+          impactScore:  formImpact  !== "" ? formImpact  : undefined,
+          riskScore:    formRiskS   !== "" ? formRiskS   : undefined,
+          overallScore: formOverall !== "" ? formOverall : undefined,
+          pdfUrl:       formPdfUrl  || undefined,
         }),
       });
       const data = await res.json();
@@ -93,6 +103,11 @@ export default function AnalystDashboard() {
       setFormTitle("");
       setFormContent("");
       setFormRating(0);
+      setFormGrowth("");
+      setFormImpact("");
+      setFormRiskS("");
+      setFormOverall("");
+      setFormPdfUrl("");
       setFormSuccess(true);
       setTimeout(() => setFormSuccess(false), 3000);
       setMyReports((prev) => [data, ...prev]);
@@ -265,6 +280,64 @@ export default function AnalystDashboard() {
                         </span>
                       )}
                     </div>
+                  </div>
+
+                  {/* Analyst scoring — mirrors AI metrics for consensus comparison */}
+                  <div className="rounded-xl border border-purple-500/10 bg-purple-500/[0.03] p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Scoring (Optional)</p>
+                      <span className="text-[10px] text-gray-600">Mirrors AI dimensions · 0–100 scale</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {([
+                        ["Overall Score",  formOverall, setFormOverall],
+                        ["Growth Score",   formGrowth,  setFormGrowth ],
+                        ["Impact Score",   formImpact,  setFormImpact ],
+                        ["Risk Score",     formRiskS,   setFormRiskS  ],
+                      ] as [string, number | "", (v: number | "") => void][]).map(([label, val, setter]) => (
+                        <div key={label}>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="text-[10px] font-medium uppercase tracking-wider text-gray-600">{label}</label>
+                            {val !== "" && (
+                              <span className={`text-xs font-mono font-bold ${
+                                label === "Risk Score"
+                                  ? (val as number) > 65 ? "text-red-400" : (val as number) > 40 ? "text-yellow-400" : "text-green-400"
+                                  : (val as number) >= 70 ? "text-green-400" : (val as number) >= 45 ? "text-yellow-400" : "text-red-400"
+                              }`}>{val}</span>
+                            )}
+                          </div>
+                          <input
+                            type="number" min={0} max={100}
+                            value={val}
+                            onChange={(e) => setter(e.target.value === "" ? "" : Math.min(100, Math.max(0, Number(e.target.value))))}
+                            placeholder="0-100"
+                            className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-gray-700 focus:border-purple-500/40 focus:outline-none"
+                          />
+                          {val !== "" && (
+                            <div className="mt-1.5 h-1 rounded-full bg-white/5">
+                              <div
+                                className="h-1 rounded-full transition-all"
+                                style={{ width: `${val}%`, background: label === "Risk Score" ? (val as number) > 65 ? "#EF4444" : (val as number) > 40 ? "#FBBF24" : "#10B981" : (val as number) >= 70 ? "#10B981" : (val as number) >= 45 ? "#FBBF24" : "#EF4444" }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* PDF URL */}
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-gray-500">
+                      PDF Report URL <span className="normal-case text-gray-600">(optional — Google Drive, Dropbox, etc.)</span>
+                    </label>
+                    <input
+                      type="url"
+                      value={formPdfUrl}
+                      onChange={(e) => setFormPdfUrl(e.target.value)}
+                      placeholder="https://drive.google.com/file/…"
+                      className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:border-purple-500/40 focus:outline-none"
+                    />
                   </div>
 
                   {formError && (
